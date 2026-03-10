@@ -1,60 +1,104 @@
-import pandas as pd
-from datetime import datetime
-import database  # Connects to your Supabase/PostgreSQL logic
+import os
+from flask import Flask, render_template, request, redirect, url_for
+import database
+import inventory
+import forecaster
 
-def get_ai_inventory_advice():
-    """
-    Analyzes historical data from Supabase to predict how many of each plant
-    Mom needs to have in stock for the next 7 days.
-    """
-    # 1. Use the cloud connection from database.py
+app = Flask(__name__)
+
+# --- ADMIN DASHBOARD ---
+@app.route('/')
+def index():
+    # 1. Get Financial Stats (Preserved)
+    d_qty, d_rev, d_profit = database.get_financial_report('day')
+    m_qty, m_rev, m_profit = database.get_financial_report('month')
+
+    # 2. Get AI Forecasts (Preserved)
+    ai_predictions = forecaster.get_ai_inventory_advice()
+
+    # 3. Get Low Stock Alerts (Preserved)
+    low_stock = inventory.get_low_stock_alerts()
+
+    # 4. Get Inventory Summary (Preserved)
+    inv_summary = inventory.get_inventory_summary()
+
+    # 5. Fetch last 7 days of revenue (Updated for PostgreSQL/Supabase)
     conn = database.get_db_connection()
-
-    # 2. Load historical sales into a DataFrame
-    # Using PostgreSQL syntax for Supabase
-    query = "SELECT plant_name, quantity, is_weekend FROM sales"
-
+    cur = conn.cursor()
+    query = """
+        SELECT sale_date, SUM(revenue)
+        FROM sales
+        GROUP BY sale_date
+        ORDER BY sale_date DESC
+        LIMIT 7
+    """
     try:
-        # Utilizing pandas to read the sql query directly
-        df = pd.read_sql_query(query, conn)
+        cur.execute(query)
+        chart_data = cur.fetchall()[::-1] 
     except Exception as e:
-        print(f"Error reading sales from Supabase: {e}")
-        return []
+        print(f"Chart Data Error: {e}")
+        chart_data = []
     finally:
-        # Return the connection back to the pool
+        cur.close()
         database.return_connection(conn)
 
-    if df.empty:
-        return []
+    labels = [row[0].strftime('%Y-%m-%d') if row[0] else "No Date" for row in chart_data] if chart_data else ["No Data"]
+    values = [row[1] for row in chart_data] if chart_data else [0]
 
-    # 3. Calculate the 'Velocity' of each plant
-    summary = df.groupby('plant_name')['quantity'].sum().reset_index()
+    return render_template('dashboard.html',
+                           today_profit=d_profit,
+                           month_profit=m_profit,
+                           total_plants=inv_summary['total_count'],
+                           predictions=ai_predictions,
+                           low_stock=low_stock,
+                           labels=labels,
+                           values=values)
 
-    # 4. Forecast for next 7 days
-    # (Total Sold / 180 days) * 7 days = Expected Demand
-    summary['demand_forecast'] = (summary['quantity'] / 180) * 7
+# --- INVENTORY MANAGEMENT ---
 
-    # 5. Add a 'Buffer' (Safety Stock)
-    # AI Rule: Always keep 20% extra for unexpected customers
-    summary['suggested_stock'] = (summary['demand_forecast'] * 1.2).round(0)
+@app.route('/manage')
+def manage():
+    """Allows Mom to see the full list of plants and manage them visually."""
+    all_plants = database.get_all_plants()
+    return render_template('inventory.html', plants=all_plants)
 
-    # 6. Convert to a readable list for the Dashboard/Bot
-    forecast_list = []
-    for index, row in summary.iterrows():
-        forecast_list.append({
-            "plant": row['plant_name'],
-            "predicted_sales": int(row['demand_forecast']),
-            "order_total": int(row['suggested_stock'])
-        })
+@app.route('/add_plant', methods=['POST'])
+def add_plant():
+    """Web form for adding new plants."""
+    name = request.form.get('name')
+    cat = request.form.get('category')
+    price = float(request.form.get('price'))
+    cost = float(request.form.get('cost'))
+    database.add_new_plant(name, cat, price, cost)
+    return redirect(url_for('manage'))
 
-    return forecast_list
+@app.route('/update_stock', methods=['POST'])
+def update_stock():
+    """Web form for updating stock."""
+    p_id = int(request.form.get('id'))
+    qty = int(request.form.get('qty'))
+    database.update_stock_manually(p_id, qty)
+    return redirect(url_for('manage'))
 
-if __name__ == "__main__":
-    # Test the AI logic
-    predictions = get_ai_inventory_advice()
-    print("🤖 AI 7-DAY DEMAND FORECAST (Cloud Sync):")
-    if isinstance(predictions, list):
-        for p in predictions:
-            print(f"🌿 {p['plant']}: Expecting {p['predicted_sales']} sales -> Maintain {p['order_total']} in stock.")
-    else:
-        print(predictions)
+@app.route('/delete/<int:id>')
+def delete_plant(id):
+    """Web button for deleting plants."""
+    database.delete_plant_by_id(id)
+    return redirect(url_for('manage'))
+
+# --- PUBLIC CUSTOMER STORE (Preserved) ---
+@app.route('/store')
+def store():
+    conn = database.get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("SELECT name, category, price, stock FROM plants WHERE stock > 0")
+        public_plants = cur.fetchall()
+        whatsapp_number = "919744958548"
+        return render_template('store.html', plants=public_plants, phone=whatsapp_number)
+    finally:
+        cur.close()
+        database.return_connection(conn)
+
+if __name__ == '__main__':
+    app.run(debug=True)
