@@ -1,6 +1,5 @@
 import database  # This now handles our cloud connection pool
 
-
 def get_low_stock_alerts():
     """Finds plants that are running low so Mom can reorder."""
     conn = database.get_db_connection()
@@ -47,7 +46,7 @@ def update_price_by_category(category, percentage_increase):
 
         # In PostgreSQL (Supabase), we use %s instead of ?
         cur.execute("UPDATE plants SET price = price * %s WHERE category = %s", (multiplier, category))
-
+        
         conn.commit()
         return f"Updated all {category} prices by {percentage_increase}%"
     finally:
