@@ -4,23 +4,27 @@ from psycopg2 import pool
 from datetime import datetime
 
 # --- Block 1: The Cloud Connection ---
-# Replace [YOUR-PASSWORD] with your actual Supabase password
 DB_URL = "postgresql://postgres:Bh8zQ953FOfPhKTT@db.zqqvqnlwbfivvqucziuu.supabase.co:5432/postgres"
+
+# We define the variable outside the try block so it ALWAYS exists
+connection_pool = None
 
 try:
     # Pool size 1 to 10 allows the Bot and Website to talk at the same time
     connection_pool = psycopg2.pool.SimpleConnectionPool(1, 10, DB_URL)
+    print("✅ Supabase Connection Pool Created")
 except Exception as e:
     print(f"❌ Connection Error: {e}")
 
-
 def get_db_connection():
+    # This check prevents the NameError crash
+    if connection_pool is None:
+        raise Exception("Database connection pool not initialized. Check your internet or DB_URL.")
     return connection_pool.getconn()
 
-
 def return_connection(conn):
-    connection_pool.putconn(conn)
-
+    if connection_pool:
+        connection_pool.putconn(conn)
 
 # --- Block 2: Database Setup (All Tables Included) ---
 def create_database():
@@ -46,13 +50,13 @@ def create_database():
             CREATE TABLE IF NOT EXISTS sales (
                 id SERIAL PRIMARY KEY,
                 plant_name TEXT,
-                category TEXT,        
+                category TEXT,
                 quantity INTEGER,
                 revenue FLOAT,
                 sale_date DATE,
-                month INTEGER,        
-                is_weekend INTEGER,    
-                is_festival INTEGER DEFAULT 0  
+                month INTEGER,
+                is_weekend INTEGER,
+                is_festival INTEGER DEFAULT 0
             )
     ''')
 
@@ -65,7 +69,7 @@ def create_database():
                 plant_name TEXT,
                 quantity INTEGER,
                 total_price FLOAT,
-                status TEXT DEFAULT 'pending', 
+                status TEXT DEFAULT 'pending',
                 order_date DATE
             )
         ''')
@@ -74,7 +78,6 @@ def create_database():
     cur.close()
     return_connection(conn)
     print("✅ All Supabase Tables (Plants, Sales, Orders) Verified!")
-
 
 # --- Block 3: Sale Recording (Weekend & Month Logic) ---
 def record_real_sale(plant_id, quantity):
@@ -93,16 +96,14 @@ def record_real_sale(plant_id, quantity):
             is_weekend = 1 if datetime.now().weekday() >= 5 else 0
 
             cur.execute("UPDATE plants SET stock = %s, last_updated = %s WHERE id = %s", (new_stock, today, plant_id))
-            cur.execute('''INSERT INTO sales (plant_name, category, quantity, revenue, sale_date, month, is_weekend) 
-                              VALUES (%s, %s, %s, %s, %s, %s, %s)''',
-                        (name, cat, quantity, revenue, today, current_month, is_weekend))
+            cur.execute('''INSERT INTO sales (plant_name, category, quantity, revenue, sale_date, month, is_weekend)
+                              VALUES (%s, %s, %s, %s, %s, %s, %s)''', (name, cat, quantity, revenue, today, current_month, is_weekend))
             conn.commit()
             return True, f"Sold {quantity} {name}(s)."
         return False, "Insufficient stock."
     finally:
         cur.close()
         return_connection(conn)
-
 
 # --- Block 4: Inventory & Management Helpers ---
 def get_all_plants():
@@ -113,7 +114,6 @@ def get_all_plants():
     cur.close()
     return_connection(conn)
     return plants
-
 
 def add_new_plant(name, category, price, unit_cost):
     conn = get_db_connection()
@@ -126,7 +126,6 @@ def add_new_plant(name, category, price, unit_cost):
     return_connection(conn)
     return True
 
-
 def delete_plant_by_id(plant_id):
     conn = get_db_connection()
     cur = conn.cursor()
@@ -135,7 +134,6 @@ def delete_plant_by_id(plant_id):
     cur.close()
     return_connection(conn)
     return True
-
 
 # --- Block 5: Financial Reporting (Day/Month Profit) ---
 def get_financial_report(period='day'):
@@ -159,7 +157,6 @@ def get_financial_report(period='day'):
         cur.close()
         return_connection(conn)
 
-
 # --- Block 6: Performance Ranking ---
 def get_top_performers(limit=10):
     conn = get_db_connection()
@@ -173,7 +170,6 @@ def get_top_performers(limit=10):
     cur.close()
     return_connection(conn)
     return data
-
 
 if __name__ == "__main__":
     create_database()
