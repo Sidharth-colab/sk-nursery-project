@@ -9,50 +9,61 @@ app = Flask(__name__)
 # --- ADMIN DASHBOARD ---
 @app.route('/')
 def index():
-    # 1. Get Financial Stats (Preserved)
-    d_qty, d_rev, d_profit = database.get_financial_report('day')
-    m_qty, m_rev, m_profit = database.get_financial_report('month')
-
-    # 2. Get AI Forecasts (Preserved)
-    ai_predictions = forecaster.get_ai_inventory_advice()
-
-    # 3. Get Low Stock Alerts (Preserved)
-    low_stock = inventory.get_low_stock_alerts()
-
-    # 4. Get Inventory Summary (Preserved)
-    inv_summary = inventory.get_inventory_summary()
-
-    # 5. Fetch last 7 days of revenue (Updated for PostgreSQL/Supabase)
-    conn = database.get_db_connection()
-    cur = conn.cursor()
-    query = """
-        SELECT sale_date, SUM(revenue)
-        FROM sales
-        GROUP BY sale_date
-        ORDER BY sale_date DESC
-        LIMIT 7
-    """
     try:
+        # 1. Get Financial Stats
+        d_qty, d_rev, d_profit = database.get_financial_report('day')
+        m_qty, m_rev, m_profit = database.get_financial_report('month')
+
+        # 2. Get AI Forecasts
+        ai_predictions = forecaster.get_ai_inventory_advice()
+
+        # 3. Get Low Stock Alerts
+        low_stock = inventory.get_low_stock_alerts()
+
+        # 4. Get Inventory Summary
+        inv_summary = inventory.get_inventory_summary()
+
+        # 5. Fetch last 7 days of revenue for Chart
+        conn = database.get_db_connection()
+        cur = conn.cursor()
+        query = """
+            SELECT sale_date, SUM(revenue)
+            FROM sales
+            GROUP BY sale_date
+            ORDER BY sale_date DESC
+            LIMIT 7
+        """
         cur.execute(query)
         chart_data = cur.fetchall()[::-1] 
-    except Exception as e:
-        print(f"Chart Data Error: {e}")
-        chart_data = []
-    finally:
         cur.close()
         database.return_connection(conn)
 
-    labels = [row[0].strftime('%Y-%m-%d') if row[0] else "No Date" for row in chart_data] if chart_data else ["No Data"]
-    values = [row[1] for row in chart_data] if chart_data else [0]
+        # Process labels and values safely
+        labels = [row[0].strftime('%Y-%m-%d') if row[0] else "No Date" for row in chart_data] if chart_data else ["No Data"]
+        values = [row[1] for row in chart_data] if chart_data else [0]
 
-    return render_template('dashboard.html',
-                           today_profit=d_profit,
-                           month_profit=m_profit,
-                           total_plants=inv_summary['total_count'],
-                           predictions=ai_predictions,
-                           low_stock=low_stock,
-                           labels=labels,
-                           values=values)
+        return render_template('dashboard.html',
+                               today_profit=d_profit,
+                               month_profit=m_profit,
+                               total_plants=inv_summary.get('total_count', 0),
+                               predictions=ai_predictions,
+                               low_stock=low_stock,
+                               labels=labels,
+                               values=values)
+
+    except Exception as e:
+        # Log the error so you can see it in Render Logs
+        print(f"⚠️ Dashboard Load Error: {e}")
+        
+        # Fallback: Load the dashboard with Zeros/Empty lists so it doesn't 500
+        return render_template('dashboard.html',
+                               today_profit=0,
+                               month_profit=0,
+                               total_plants=0,
+                               predictions=[],
+                               low_stock=[],
+                               labels=["No Data"],
+                               values=[0])
 
 # --- INVENTORY MANAGEMENT ---
 
@@ -102,3 +113,4 @@ def store():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
