@@ -4,7 +4,7 @@ from psycopg2 import pool
 from datetime import datetime
 
 # 1. Look for Render's environment variable first, use your string as backup
-DB_URL = os.environ.get('DATABASE_URL', "postgresql://postgres:Bh8zQ953FOfPhKTT@db.zqqvqnlwbfivvqucziuu.supabase.co:5432/postgres")
+DB_URL = os.environ.get('DATABASE_URL', "postgresql://postgres.zqqvqnlwbfivvqucziuu:Bh8zQ953FOfPhKTT@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres")
 
 # Initialize the variable
 connection_pool = None
@@ -185,4 +185,5 @@ def get_top_performers(limit=10):
 
 if __name__ == "__main__":
     create_database()
+
 
