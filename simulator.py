@@ -2,7 +2,6 @@ import database  # Connects to your Supabase/PostgreSQL logic
 import random
 from datetime import datetime, timedelta
 
-
 def run_simulation():
     print("🌱 Starting SKGreenary Sales Simulation on Supabase...")
 
@@ -57,10 +56,9 @@ def run_simulation():
     conn.commit()
     cur.close()
     database.return_connection(conn)
-
+    
     print(f"✅ Success! Inserted {total_sales_count} simulated sales over 180 days.")
     print("🚀 Your Dashboard and AI Forecaster are now populated with data!")
-
 
 if __name__ == "__main__":
     run_simulation()
