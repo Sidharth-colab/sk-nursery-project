@@ -5,7 +5,7 @@ from datetime import datetime
 
 # --- Block 1: The Cloud Connection (Updated for Render/IPv4 Compatibility) ---
 # We use port 6543 (Transaction Pooler) because port 5432 is often IPv6-only
-DB_URL = os.environ.get('DATABASE_URL', "postgresql://postgres:Bh8zQ953FOfPhKTT@db.zqqvqnlwbfivvqucziuu.supabase.co:6543/postgres?pgbouncer=true")
+DB_URL = os.environ.get('DATABASE_URL', "postgresql://postgres:Bh8zQ953FOfPhKTT@db.zqqvqnlwbfivvqucziuu.supabase.co:6543/postgres")
 
 connection_pool = None
 
@@ -184,6 +184,7 @@ def get_top_performers(limit=10):
 
 if __name__ == "__main__":
     create_database()
+
 
 
 
