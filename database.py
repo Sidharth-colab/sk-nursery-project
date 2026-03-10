@@ -3,35 +3,34 @@ import psycopg2
 from psycopg2 import pool
 from datetime import datetime
 
-# 1. Look for Render's environment variable first, use your string as backup
-DB_URL = os.environ.get('DATABASE_URL', "postgresql://postgres.zqqvqnlwbfivvqucziuu:Bh8zQ953FOfPhKTT@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres")
+# --- Block 1: The Cloud Connection (Updated for Render/IPv4 Compatibility) ---
+# We use port 6543 (Transaction Pooler) because port 5432 is often IPv6-only
+DB_URL = os.environ.get('DATABASE_URL', "postgresql://postgres:Bh8zQ953FOfPhKTT@db.zqqvqnlwbfivvqucziuu.supabase.co:6543/postgres?pgbouncer=true")
 
-# Initialize the variable
 connection_pool = None
 
 def init_pool():
-    """Tries to create the connection pool if it doesn't exist."""
     global connection_pool
     if connection_pool is None:
         try:
-            # We use a min of 1 and max of 10 connections
-            connection_pool = psycopg2.pool.SimpleConnectionPool(1, 10, DB_URL)
-            print("✅ Supabase Connection Pool Created")
+            # We add connect_timeout=10 to give the network time to establish the bridge
+            connection_pool = psycopg2.pool.SimpleConnectionPool(1, 10, DB_URL, connect_timeout=10)
+            print("✅ Connected to Supabase via Transaction Pooler (Port 6543)")
         except Exception as e:
-            print(f"❌ Connection Error during init: {e}")
+            print(f"❌ Connection Error during initialization: {e}")
 
 # Try to initialize immediately on startup
 init_pool()
 
 def get_db_connection():
     global connection_pool
-    # If the pool is still None (startup failed), try one more time now
+    # If the pool failed at startup, try to fix it now
     if connection_pool is None:
         init_pool()
-    
+        
     if connection_pool is None:
         raise Exception("Database connection pool not initialized. Check your Render Environment 'DATABASE_URL'.")
-        
+    
     return connection_pool.getconn()
 
 def return_connection(conn):
@@ -185,5 +184,6 @@ def get_top_performers(limit=10):
 
 if __name__ == "__main__":
     create_database()
+
 
 
