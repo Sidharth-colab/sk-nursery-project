@@ -3,27 +3,39 @@ import psycopg2
 from psycopg2 import pool
 from datetime import datetime
 
-# --- Block 1: The Cloud Connection ---
-DB_URL = "postgresql://postgres:Bh8zQ953FOfPhKTT@db.zqqvqnlwbfivvqucziuu.supabase.co:5432/postgres"
+# 1. Look for Render's environment variable first, use your string as backup
+DB_URL = os.environ.get('DATABASE_URL', "postgresql://postgres:Bh8zQ953FOfPhKTT@db.zqqvqnlwbfivvqucziuu.supabase.co:5432/postgres")
 
-# We define the variable outside the try block so it ALWAYS exists
+# Initialize the variable
 connection_pool = None
 
-try:
-    # Pool size 1 to 10 allows the Bot and Website to talk at the same time
-    connection_pool = psycopg2.pool.SimpleConnectionPool(1, 10, DB_URL)
-    print("✅ Supabase Connection Pool Created")
-except Exception as e:
-    print(f"❌ Connection Error: {e}")
+def init_pool():
+    """Tries to create the connection pool if it doesn't exist."""
+    global connection_pool
+    if connection_pool is None:
+        try:
+            # We use a min of 1 and max of 10 connections
+            connection_pool = psycopg2.pool.SimpleConnectionPool(1, 10, DB_URL)
+            print("✅ Supabase Connection Pool Created")
+        except Exception as e:
+            print(f"❌ Connection Error during init: {e}")
+
+# Try to initialize immediately on startup
+init_pool()
 
 def get_db_connection():
-    # This check prevents the NameError crash
+    global connection_pool
+    # If the pool is still None (startup failed), try one more time now
     if connection_pool is None:
-        raise Exception("Database connection pool not initialized. Check your internet or DB_URL.")
+        init_pool()
+    
+    if connection_pool is None:
+        raise Exception("Database connection pool not initialized. Check your Render Environment 'DATABASE_URL'.")
+        
     return connection_pool.getconn()
 
 def return_connection(conn):
-    if connection_pool:
+    if connection_pool and conn:
         connection_pool.putconn(conn)
 
 # --- Block 2: Database Setup (All Tables Included) ---
@@ -173,3 +185,4 @@ def get_top_performers(limit=10):
 
 if __name__ == "__main__":
     create_database()
+
