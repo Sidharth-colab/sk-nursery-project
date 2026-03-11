@@ -6,6 +6,9 @@ import forecaster
 
 app = Flask(__name__)
 
+# Create tables in Neon on startup
+database.create_database()
+
 # --- ADMIN DASHBOARD ---
 @app.route('/')
 def index():
@@ -113,4 +116,5 @@ def store():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
