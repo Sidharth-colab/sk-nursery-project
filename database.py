@@ -5,7 +5,7 @@ from datetime import datetime
 
 # --- Block 1: The Cloud Connection (Updated for Render/IPv4 Compatibility) ---
 # We use port 6543 (Transaction Pooler) because port 5432 is often IPv6-only
-DB_URL = os.environ.get('DATABASE_URL', "postgresql://postgres:Bh8zQ953FOfPhKTT@db.zqqvqnlwbfivvqucziuu.supabase.co:6543/postgres")
+DB_URL = os.environ.get('DATABASE_URL', "postgresql://neondb_owner:npg_XNBjnH9Oep7S@ep-frosty-cake-adiwskfg-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require")
 
 connection_pool = None
 
@@ -15,7 +15,7 @@ def init_pool():
         try:
             # We add connect_timeout=10 to give the network time to establish the bridge
             connection_pool = psycopg2.pool.SimpleConnectionPool(1, 10, DB_URL, connect_timeout=10)
-            print("✅ Connected to Supabase via Transaction Pooler (Port 6543)")
+            print("✅ Connected to Neon via Transaction Pooler")
         except Exception as e:
             print(f"❌ Connection Error during initialization: {e}")
 
@@ -146,6 +146,19 @@ def delete_plant_by_id(plant_id):
     return_connection(conn)
     return True
 
+def update_stock_manually(plant_id, new_stock):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    today = datetime.now().date()
+    cur.execute(
+        "UPDATE plants SET stock = %s, last_updated = %s WHERE id = %s",
+        (new_stock, today, plant_id)
+    )
+    conn.commit()
+    cur.close()
+    return_connection(conn)
+    return True
+
 # --- Block 5: Financial Reporting (Day/Month Profit) ---
 def get_financial_report(period='day'):
     conn = get_db_connection()
@@ -184,6 +197,7 @@ def get_top_performers(limit=10):
 
 if __name__ == "__main__":
     create_database()
+
 
 
 
