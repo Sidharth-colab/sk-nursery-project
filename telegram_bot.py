@@ -14,11 +14,16 @@ app = Flask('')
 
 @app.route('/')
 def home():
-    return "SKGreenary Bot is Online and Syncing with Supabase!"
+    return "SKGreenary Bot is Online!", 200
+
+@app.route('/health')
+def health():
+    return "OK", 200
 
 
 def run_flask():
-    app.run(host='0.0.0.0', port=8080)
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port)
 
 
 # --- Block 1: Bot Setup ---
@@ -149,3 +154,4 @@ if __name__ == '__main__':
     application.add_handler(CallbackQueryHandler(handle_callback))
 
     application.run_polling(drop_pending_updates=True)
+
