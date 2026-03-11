@@ -1,16 +1,49 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
+from functools import wraps
 import database
 import inventory
 import forecaster
 
 app = Flask(__name__)
+app.secret_key = os.environ.get('SECRET_KEY', 'skgreenary2026secure')
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'nursery2525')
 
+database.create_database()
+
+# --- Login Required Decorator ---
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get('logged_in'):
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated
 # Create tables in Neon on startup
 database.create_database()
 
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        if request.form.get('password') == ADMIN_PASSWORD:
+            session['logged_in'] = True
+            return redirect(url_for('index'))
+        else:
+            error = "Wrong password! Try again."
+    return render_template('login.html', error=error)
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
+
+
 # --- ADMIN DASHBOARD ---
 @app.route('/')
+@login_required
 def index():
     try:
         # 1. Get Financial Stats
@@ -71,12 +104,14 @@ def index():
 # --- INVENTORY MANAGEMENT ---
 
 @app.route('/manage')
+@login_required
 def manage():
     """Allows Mom to see the full list of plants and manage them visually."""
     all_plants = database.get_all_plants()
     return render_template('inventory.html', plants=all_plants)
 
 @app.route('/add_plant', methods=['POST'])
+@login_required
 def add_plant():
     """Web form for adding new plants."""
     name = request.form.get('name')
@@ -87,6 +122,7 @@ def add_plant():
     return redirect(url_for('manage'))
 
 @app.route('/update_stock', methods=['POST'])
+@login_required
 def update_stock():
     """Web form for updating stock."""
     p_id = int(request.form.get('id'))
@@ -95,6 +131,7 @@ def update_stock():
     return redirect(url_for('manage'))
 
 @app.route('/delete/<int:id>')
+@login_required
 def delete_plant(id):
     """Web button for deleting plants."""
     database.delete_plant_by_id(id)
@@ -116,5 +153,6 @@ def store():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
