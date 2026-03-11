@@ -1,6 +1,7 @@
 import logging
 import asyncio
 import database
+import os
 from flask import Flask
 from threading import Thread
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -21,7 +22,7 @@ def run_flask():
 
 
 # --- Block 1: Bot Setup ---
-TOKEN = '8793225838:AAFNb8kz1qzVDKSnDssZ91ie17Cn5wplPa0'
+TOKEN = os.environ.get('BOT_TOKEN', '8793225838:AAFNb8kz1qzVDKSnDssZ91ie17Cn5wplPa0')
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -146,4 +147,5 @@ if __name__ == '__main__':
     application = ApplicationBuilder().token(TOKEN).build()
     application.add_handler(CommandHandler('start', start))
     application.add_handler(CallbackQueryHandler(handle_callback))
-    application.run_polling()
+
+    application.run_polling(drop_pending_updates=True)
