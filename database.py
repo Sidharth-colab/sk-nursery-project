@@ -14,7 +14,7 @@ def init_pool():
     if connection_pool is None:
         try:
             # We add connect_timeout=10 to give the network time to establish the bridge
-            connection_pool = psycopg2.pool.SimpleConnectionPool(1, 10, DB_URL, connect_timeout=10)
+            connection_pool = psycopg2.pool.SimpleConnectionPool(1, 10, DB_URL, connect_timeout=10, keepalives=1, keepalives_idle=30, keepalives_interval=10, keepalives_count=5)
             print("✅ Connected to Neon via Transaction Pooler")
         except Exception as e:
             print(f"❌ Connection Error during initialization: {e}")
@@ -127,15 +127,25 @@ def get_all_plants():
     return plants
 
 def add_new_plant(name, category, price, unit_cost):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    today = datetime.now().date()
-    cur.execute('''INSERT INTO plants (name, category, price, stock, min_stock, unit_cost, last_updated)
-                      VALUES (%s, %s, %s, 0, 5, %s, %s)''', (name, category, price, unit_cost, today))
-    conn.commit()
-    cur.close()
-    return_connection(conn)
-    return True
+    global connection_pool
+    conn = None
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        today = datetime.now().date()
+        cur.execute('''INSERT INTO plants (name, category, price, stock, min_stock, unit_cost, last_updated)
+                          VALUES (%s, %s, %s, 0, 5, %s, %s)''', (name, category, price, unit_cost, today))
+        conn.commit()
+        cur.close()
+        return True
+    except Exception as e:
+        print(f"❌ Error adding plant: {e}")
+        # Reset the pool on connection error
+        connection_pool = None
+        raise e
+    finally:
+        if conn:
+            return_connection(conn)
 
 def delete_plant_by_id(plant_id):
     conn = get_db_connection()
@@ -197,6 +207,7 @@ def get_top_performers(limit=10):
 
 if __name__ == "__main__":
     create_database()
+
 
 
 
