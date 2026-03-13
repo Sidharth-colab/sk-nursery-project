@@ -47,6 +47,26 @@ def create_database():
            )
      ''')
 
+
+    cur.execute('''
+         CREATE TABLE IF NOT EXISTS plants (
+         id SERIAL PRIMARY KEY,
+         name TEXT NOT NULL,
+         category TEXT,
+         price FLOAT,
+         stock INTEGER,
+         min_stock INTEGER DEFAULT 2,
+         unit_cost FLOAT,
+         last_updated DATE,
+         image_url TEXT DEFAULT '',
+         is_visible INTEGER DEFAULT 1
+        )
+    ''')
+
+    cur.execute('''
+          ALTER TABLE plants ADD COLUMN IF NOT EXISTS is_visible INTEGER DEFAULT 1
+    ''')
+    
     cur.execute('''
     ALTER TABLE plants ADD COLUMN IF NOT EXISTS image_url TEXT DEFAULT ''
     ''')
@@ -156,6 +176,15 @@ def update_stock_manually(plant_id, new_stock):
         "UPDATE plants SET stock = %s, last_updated = %s WHERE id = %s",
         (new_stock, today, plant_id)
     )
+    conn.commit()
+    cur.close()
+    return_connection(conn)
+    return True
+
+def toggle_plant_visibility(plant_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE plants SET is_visible = CASE WHEN is_visible = 1 THEN 0 ELSE 1 END WHERE id = %s", (plant_id,))
     conn.commit()
     cur.close()
     return_connection(conn)
