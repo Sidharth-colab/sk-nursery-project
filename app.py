@@ -58,18 +58,60 @@ def index():
         # 4. Get Inventory Summary
         inv_summary = inventory.get_inventory_summary()
 
-        # 5. Fetch last 7 days of revenue for Chart
+        # 5. All DB queries
         conn = database.get_db_connection()
         cur = conn.cursor()
-        query = """
+
+        # 7-day revenue chart
+        cur.execute("""
             SELECT sale_date, SUM(revenue)
             FROM sales
             GROUP BY sale_date
             ORDER BY sale_date DESC
             LIMIT 7
-        """
-        cur.execute(query)
-        chart_data = cur.fetchall()[::-1] 
+        """)
+        chart_data = cur.fetchall()[::-1]
+
+        # Category wise sales
+        cur.execute("""
+            SELECT category, SUM(revenue)
+            FROM sales
+            GROUP BY category
+        """)
+        category_data = cur.fetchall()
+
+        # Recent 10 sales
+        cur.execute("""
+            SELECT plant_name, quantity, revenue, sale_date
+            FROM sales
+            ORDER BY sale_date DESC, id DESC
+            LIMIT 10
+        """)
+        recent_sales = cur.fetchall()
+
+        # Top performers
+        cur.execute("""
+            SELECT s.plant_name, SUM(s.quantity), SUM(s.revenue - (s.quantity * p.unit_cost)) as profit
+            FROM sales s JOIN plants p ON s.plant_name = p.name
+            GROUP BY s.plant_name ORDER BY profit DESC LIMIT 5
+        """)
+        top_plants = cur.fetchall()
+
+        # Monthly comparison
+        cur.execute("""
+            SELECT SUM(revenue) FROM sales
+            WHERE EXTRACT(MONTH FROM sale_date) = EXTRACT(MONTH FROM CURRENT_DATE)
+            AND EXTRACT(YEAR FROM sale_date) = EXTRACT(YEAR FROM CURRENT_DATE)
+        """)
+        this_month_rev = cur.fetchone()[0] or 0
+
+        cur.execute("""
+            SELECT SUM(revenue) FROM sales
+            WHERE EXTRACT(MONTH FROM sale_date) = EXTRACT(MONTH FROM CURRENT_DATE - INTERVAL '1 month')
+            AND EXTRACT(YEAR FROM sale_date) = EXTRACT(YEAR FROM CURRENT_DATE - INTERVAL '1 month')
+        """)
+        last_month_rev = cur.fetchone()[0] or 0
+
         cur.close()
         database.return_connection(conn)
 
@@ -84,13 +126,15 @@ def index():
                                predictions=ai_predictions,
                                low_stock=low_stock,
                                labels=labels,
-                               values=values)
+                               values=values,
+                               category_data=category_data,
+                               recent_sales=recent_sales,
+                               top_plants=top_plants,
+                               this_month_rev=this_month_rev,
+                               last_month_rev=last_month_rev)
 
     except Exception as e:
-        # Log the error so you can see it in Render Logs
         print(f"⚠️ Dashboard Load Error: {e}")
-        
-        # Fallback: Load the dashboard with Zeros/Empty lists so it doesn't 500
         return render_template('dashboard.html',
                                today_profit=0,
                                month_profit=0,
@@ -98,7 +142,12 @@ def index():
                                predictions=[],
                                low_stock=[],
                                labels=["No Data"],
-                               values=[0])
+                               values=[0],
+                               category_data=[],
+                               recent_sales=[],
+                               top_plants=[],
+                               this_month_rev=0,
+                               last_month_rev=0)
 
 # --- INVENTORY MANAGEMENT ---
 
@@ -156,6 +205,7 @@ def store():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
