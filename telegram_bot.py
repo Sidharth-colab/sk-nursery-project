@@ -135,7 +135,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         for p_id, qty in basket.items():
             database.record_real_sale(p_id, qty)
         context.user_data['basket'] = {}
-        await query.message.reply_text("✅ *Sale Processed!* Data synced to Supabase.")
+        await query.message.reply_text("✅ *Sale Processed!* Data synced to Neon.")
         await asyncio.sleep(2)
         await start(update, context)
 
@@ -154,4 +154,5 @@ if __name__ == '__main__':
     application.add_handler(CallbackQueryHandler(handle_callback))
 
     application.run_polling(drop_pending_updates=True)
+
 
