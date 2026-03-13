@@ -9,8 +9,6 @@
     <style>
         .plant-card { transition: transform 0.2s; border: none; border-radius: 15px; }
         .plant-card:hover { transform: scale(1.05); }
-        .whatsapp-btn { background-color: #25D366; color: white; border-radius: 25px; }
-        .whatsapp-btn:hover { background-color: #128C7E; color: white; }
         .hero-section { background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://images.unsplash.com/photo-1466781783364-391eaf59cf40?auto=format&fit=crop&w=1350&q=80'); background-size: cover; background-position: center; }
     </style>
 </head>
@@ -22,39 +20,88 @@
     </div>
 
     <div class="container">
-        <div class="row">
+
+        <!-- Search Bar -->
+        <div class="mb-4">
+            <input type="text" id="searchBar" class="form-control form-control-lg shadow-sm"
+                   placeholder="🔍 Search plants..." onkeyup="searchPlants()">
+        </div>
+
+        <!-- Plant Grid -->
+        <div class="row" id="plantGrid">
             {% for name, cat, price, stock, image_url in plants %}
-            <div class="col-md-4 mb-4">
+            <div class="col-md-4 mb-4 plant-card-wrapper" data-name="{{ name }}">
                 <div class="card plant-card shadow-sm h-100">
                     <div class="card-body text-center">
-    {% if image_url %}
-    <img src="{{ image_url }}" class="img-fluid mb-3 rounded" style="height: 150px; width: 100%; object-fit: cover;">
-    {% else %}
-    <div class="bg-light d-flex align-items-center justify-content-center mb-3 rounded" style="height: 150px; font-size: 4rem;">🌿</div>
-    {% endif %}
-    <span class="badge bg-secondary mb-2">{{ cat }}</span>
-    <h4 class="card-title">{{ name }}</h4>
-
+                        {% if image_url %}
+                        <img src="{{ image_url }}" class="img-fluid mb-3 rounded" style="height: 150px; width: 100%; object-fit: cover;">
+                        {% else %}
+                        <div class="bg-light d-flex align-items-center justify-content-center mb-3 rounded" style="height: 150px; font-size: 4rem;">🌿</div>
+                        {% endif %}
+                        <span class="badge bg-secondary mb-2">{{ cat }}</span>
+                        <h4 class="card-title">{{ name }}</h4>
                         <p class="text-success fw-bold fs-4">₹{{ price }}</p>
-
                         <a href="https://wa.me/{{ phone }}?text=Hello%20SKGreenary!%20I%20want%20to%20buy%20the%20{{ name }}%20({{ cat }})%20for%20₹{{ price }}."
                            target="_blank"
-                           class="btn btn-success w-100 shadow-sm"
+                           class="btn btn-success w-100 shadow-sm mb-2"
                            style="background-color: #25D366; border: none; font-weight: bold;">
                             <i class="fab fa-whatsapp"></i> Buy Now
                         </a>
-
+                        <button class="btn btn-outline-success w-100"
+                                onclick="openOrderForm('{{ name }}', {{ price }})">
+                            📋 Place Order
+                        </button>
                         <small class="text-muted mt-2 d-block">{{ stock }} units available</small>
                     </div>
                 </div>
             </div>
             {% endfor %}
         </div>
+
+        <!-- Order Form Modal -->
+        <div class="modal fade" id="orderModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title">📋 Place Order</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="/place_order" method="POST">
+                            <input type="hidden" name="plant_name" id="modalPlantName">
+                            <input type="hidden" name="plant_price" id="modalPlantPrice">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Plant</label>
+                                <input type="text" id="modalPlantDisplay" class="form-control" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Your Name</label>
+                                <input type="text" name="customer_name" class="form-control" placeholder="Enter your name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Phone Number</label>
+                                <input type="text" name="phone" class="form-control" placeholder="Enter your phone" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Quantity</label>
+                                <input type="number" name="quantity" class="form-control" value="1" min="1" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Total Price</label>
+                                <input type="text" id="modalTotal" class="form-control" readonly>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100 fw-bold">✅ Confirm Order</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <footer class="text-center py-4 mt-5 text-muted">
         <hr class="container">
-        <p>© 2026 Green Paradise Nursery | Visit us today!</p>
+        <p>© 2026 SK Greenary | Visit us today!</p>
     </footer>
 
     <div style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
@@ -63,6 +110,31 @@
         </a>
     </div>
 
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function searchPlants() {
+            const query = document.getElementById('searchBar').value.toLowerCase();
+            const cards = document.querySelectorAll('.plant-card-wrapper');
+            cards.forEach(card => {
+                const name = card.getAttribute('data-name').toLowerCase();
+                card.style.display = name.includes(query) ? '' : 'none';
+            });
+        }
 
+        function openOrderForm(name, price) {
+            document.getElementById('modalPlantName').value = name;
+            document.getElementById('modalPlantPrice').value = price;
+            document.getElementById('modalPlantDisplay').value = name;
+            document.getElementById('modalTotal').value = '₹' + price;
+
+            const qtyInput = document.querySelector('input[name="quantity"]');
+            qtyInput.oninput = function() {
+                document.getElementById('modalTotal').value = '₹' + (this.value * price);
+            };
+
+            const modal = new bootstrap.Modal(document.getElementById('orderModal'));
+            modal.show();
+        }
+    </script>
+</body>
 </html>
