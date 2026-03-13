@@ -249,20 +249,19 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif action == "final":
         basket = context.user_data.get('basket', {})
-    for p_id, qty in basket.items():
-        database.record_real_sale(p_id, qty)
-        # Check stock after sale
-        plants = database.get_all_plants()
-        plant = next((x for x in plants if x[0] == p_id), None)
-        if plant:
-            remaining = plant[4]  # stock
-            min_stock = plant[5]  # min_stock
-            if remaining <= min_stock:
-                await send_low_stock_alert(context, plant[1], remaining)
-    context.user_data['basket'] = {}
-    await query.message.reply_text("✅ *Sale Processed!* Data synced to Neon.")
-    await asyncio.sleep(2)
-    await start(update, context)
+        for p_id, qty in basket.items():
+            database.record_real_sale(p_id, qty)
+            plants = database.get_all_plants()
+            plant = next((x for x in plants if x[0] == p_id), None)
+            if plant:
+                remaining = plant[4]
+                min_stock = plant[5]
+                if remaining <= min_stock:
+                    await send_low_stock_alert(context, plant[1], remaining)
+        context.user_data['basket'] = {}
+        await query.message.reply_text("✅ *Sale Processed!* Data synced to Neon.")
+        await asyncio.sleep(2)
+        await start(update, context)
     
 
     elif action == "run":
@@ -296,6 +295,7 @@ if __name__ == '__main__':
 )
 
     application.run_polling(drop_pending_updates=True)
+
 
 
 
