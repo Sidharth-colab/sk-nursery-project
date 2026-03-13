@@ -70,7 +70,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode='Markdown'
     )
 
-    async def report(update, context):
+async def report(update, context):
     d_qty, d_rev, d_profit = database.get_financial_report('day')
     m_qty, m_rev, m_profit = database.get_financial_report('month')
     msg = (
@@ -205,11 +205,11 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         category = data[1]
         plants = [p for p in database.get_all_plants() if p[2] == category]
         if category == "Indoor":
-    next_cat = "Outdoor"
-elif category == "Outdoor":
-    next_cat = "Vegetable"
-else:
-    next_cat = "Indoor"
+            next_cat = "Outdoor"
+        elif category == "Outdoor":
+            next_cat = "Vegetable"
+        else:
+             next_cat = "Indoor"
 
         await query.message.reply_text(f"📋 *{category} Plants:*", parse_mode='Markdown')
         for p in plants:
@@ -248,7 +248,7 @@ else:
         await query.message.reply_text(summary, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
     elif action == "final":
-    basket = context.user_data.get('basket', {})
+        basket = context.user_data.get('basket', {})
     for p_id, qty in basket.items():
         database.record_real_sale(p_id, qty)
         # Check stock after sale
@@ -296,6 +296,7 @@ if __name__ == '__main__':
 )
 
     application.run_polling(drop_pending_updates=True)
+
 
 
 
