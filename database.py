@@ -34,16 +34,21 @@ def create_database():
 
     # 1. Plants Table (Inventory)
     cur.execute('''
-        CREATE TABLE IF NOT EXISTS plants (
-             id SERIAL PRIMARY KEY,
-             name TEXT NOT NULL,
-             category TEXT,
-             price FLOAT,
-             stock INTEGER,
-             min_stock INTEGER DEFAULT 2,
-             unit_cost FLOAT,
-             last_updated DATE
-        )
+    CREATE TABLE IF NOT EXISTS plants (
+         id SERIAL PRIMARY KEY,
+         name TEXT NOT NULL,
+         category TEXT,
+         price FLOAT,
+         stock INTEGER,
+         min_stock INTEGER DEFAULT 2,
+         unit_cost FLOAT,
+         last_updated DATE,
+         image_url TEXT DEFAULT ''
+           )
+     ''')
+
+    cur.execute('''
+    ALTER TABLE plants ADD COLUMN IF NOT EXISTS image_url TEXT DEFAULT ''
     ''')
 
     # 2. Sales Table (History & Analytics)
@@ -110,28 +115,25 @@ def record_real_sale(plant_id, quantity):
 def get_all_plants():
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id, name, category, price, stock, min_stock, unit_cost FROM plants ORDER BY name")
+    cur.execute("SELECT id, name, category, price, stock, min_stock, unit_cost, image_url FROM plants ORDER BY name")
     plants = cur.fetchall()
     cur.close()
     return_connection(conn)
     return plants
 
-def add_new_plant(name, category, price, unit_cost):
-    global connection_pool
+def add_new_plant(name, category, price, unit_cost, image_url=''):
     conn = None
     try:
         conn = get_db_connection()
         cur = conn.cursor()
         today = datetime.now().date()
-        cur.execute('''INSERT INTO plants (name, category, price, stock, min_stock, unit_cost, last_updated)
-                          VALUES (%s, %s, %s, 0, 2, %s, %s)''', (name, category, price, unit_cost, today))
+        cur.execute('''INSERT INTO plants (name, category, price, stock, min_stock, unit_cost, last_updated, image_url)
+                          VALUES (%s, %s, %s, 0, 2, %s, %s, %s)''', (name, category, price, unit_cost, today, image_url))
         conn.commit()
         cur.close()
         return True
     except Exception as e:
         print(f"❌ Error adding plant: {e}")
-        # Reset the pool on connection error
-        connection_pool = None
         raise e
     finally:
         if conn:
@@ -197,6 +199,7 @@ def get_top_performers(limit=10):
 
 if __name__ == "__main__":
     create_database()
+
 
 
 
