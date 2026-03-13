@@ -100,9 +100,9 @@
                             <tr><th>#</th><th>Plant</th><th>Sold</th><th>Profit</th></tr>
                         </thead>
                         <tbody>
-                            {% for i, (name, qty, profit) in enumerate(top_plants, 1) %}
+                            {% for name, qty, profit in top_plants %}
                             <tr>
-                                <td>{{ "🥇" if i==1 else "🥈" if i==2 else "🥉" if i==3 else i }}</td>
+                                <td>{{ "🥇" if loop.index==1 else "🥈" if loop.index==2 else "🥉" if loop.index==3 else loop.index }}</td>
                                 <td>{{ name }}</td>
                                 <td>{{ qty }}</td>
                                 <td class="text-success fw-bold">₹{{ profit|round(2) }}</td>
@@ -242,3 +242,4 @@
     </script>
 </body>
 </html>
+
