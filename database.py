@@ -40,7 +40,7 @@ def create_database():
              category TEXT,
              price FLOAT,
              stock INTEGER,
-             min_stock INTEGER DEFAULT 5,
+             min_stock INTEGER DEFAULT 2,
              unit_cost FLOAT,
              last_updated DATE
         )
@@ -124,7 +124,7 @@ def add_new_plant(name, category, price, unit_cost):
         cur = conn.cursor()
         today = datetime.now().date()
         cur.execute('''INSERT INTO plants (name, category, price, stock, min_stock, unit_cost, last_updated)
-                          VALUES (%s, %s, %s, 0, 5, %s, %s)''', (name, category, price, unit_cost, today))
+                          VALUES (%s, %s, %s, 0, 2, %s, %s)''', (name, category, price, unit_cost, today))
         conn.commit()
         cur.close()
         return True
@@ -197,6 +197,7 @@ def get_top_performers(limit=10):
 
 if __name__ == "__main__":
     create_database()
+
 
 
 
