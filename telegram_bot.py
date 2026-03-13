@@ -289,12 +289,13 @@ if __name__ == '__main__':
 
     # Schedule weekly Monday 9AM summary (IST = UTC+5:30, so 9AM IST = 3:30 UTC)
     application.job_queue.run_daily(
-         send_weekly_summary,
-         time=datetime.time(3, 30, 0),
-         days=(0,)  # 0 = Monday
-)
+        send_weekly_summary,
+        time=datetime.time(3, 30, 0),
+        days=(0,)  # 0 = Monday
+    )
 
     application.run_polling(drop_pending_updates=True)
+
 
 
 
