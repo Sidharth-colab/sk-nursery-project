@@ -59,11 +59,11 @@
                             </form>
                         </td>
                         <td>
-    {% if p[7] == 1 or p[7] == '' %}
-    <a href="/toggle_visibility/{{ p[0] }}" class="btn btn-sm btn-success">👁 Visible</a>
-    {% else %}
-    <a href="/toggle_visibility/{{ p[0] }}" class="btn btn-sm btn-secondary">🙈 Hidden</a>
-    {% endif %}
+    {% if p[8] == 1 %}
+                            <a href="/toggle_visibility/{{ p[0] }}" class="btn btn-sm btn-success">👁 Visible</a>
+                            {% else %}
+                            <a href="/toggle_visibility/{{ p[0] }}" class="btn btn-sm btn-secondary">🙈 Hidden</a>
+                            {% endif %}
 </td>
 <td>
     <a href="/edit/{{ p[0] }}" class="btn btn-sm btn-warning me-1">Edit</a>
