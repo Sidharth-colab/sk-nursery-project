@@ -1,6 +1,7 @@
 import logging
 import asyncio
 import database
+import datetime
 import os
 from flask import Flask
 from threading import Thread
@@ -55,6 +56,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton("🏠 Indoor Plants", callback_data="cat_Indoor"),
          InlineKeyboardButton("☀️ Outdoor Plants", callback_data="cat_Outdoor")],
+        [InlineKeyboardButton("🥬 Vegetables", callback_data="cat_Vegetable")],
         [InlineKeyboardButton(f"🛒 View Basket ({basket_count})", callback_data="view_basket")],
         [InlineKeyboardButton("📊 Business Report", callback_data="run_report")]
     ]
@@ -67,6 +69,102 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=InlineKeyboardMarkup(keyboard),
         parse_mode='Markdown'
     )
+
+    async def report(update, context):
+    d_qty, d_rev, d_profit = database.get_financial_report('day')
+    m_qty, m_rev, m_profit = database.get_financial_report('month')
+    msg = (
+        f"📊 *SKGreenary Report*\n\n"
+        f"*Today:*\n"
+        f"🛒 Units Sold: {d_qty}\n"
+        f"💰 Revenue: ₹{d_rev}\n"
+        f"📈 Profit: ₹{round(d_profit, 2)}\n\n"
+        f"*This Month:*\n"
+        f"🛒 Units Sold: {m_qty}\n"
+        f"💰 Revenue: ₹{m_rev}\n"
+        f"📈 Profit: ₹{round(m_profit, 2)}"
+    )
+    await update.message.reply_text(msg, parse_mode='Markdown')
+
+
+async def stock(update, context):
+    low = database.get_all_plants()
+    msg = "📦 *Current Stock:*\n\n"
+    for p in low:
+        status = "⚠️" if p[4] <= 2 else "✅"
+        msg += f"{status} {p[1]}: *{p[4]}* units\n"
+    await update.message.reply_text(msg, parse_mode='Markdown')
+
+# --- Top Sellers Command ---
+async def top(update, context):
+    data = database.get_top_performers(5)
+    if not data:
+        await update.message.reply_text("No sales data yet!")
+        return
+    msg = "🏆 *Top 5 Best Sellers:*\n\n"
+    for i, (name, qty, profit) in enumerate(data, 1):
+        medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
+        msg += f"{medal} *{name}*\n"
+        msg += f"   Sold: {qty} units | Profit: ₹{round(profit, 2)}\n\n"
+    await update.message.reply_text(msg, parse_mode='Markdown')
+
+# --- Daily 8PM Summary ---
+async def send_daily_summary(context):
+    d_qty, d_rev, d_profit = database.get_financial_report('day')
+    m_qty, m_rev, m_profit = database.get_financial_report('month')
+    msg = (
+        f"🌙 *SKGreenary Daily Summary*\n\n"
+        f"*Today's Performance:*\n"
+        f"🛒 Units Sold: {d_qty}\n"
+        f"💰 Revenue: ₹{d_rev}\n"
+        f"📈 Profit: ₹{round(d_profit, 2)}\n\n"
+        f"*This Month So Far:*\n"
+        f"🛒 Units Sold: {m_qty}\n"
+        f"💰 Revenue: ₹{m_rev}\n"
+        f"📈 Profit: ₹{round(m_profit, 2)}\n\n"
+        f"Have a great evening! 🌿"
+    )
+    await context.bot.send_message(
+        chat_id=OWNER_CHAT_ID,
+        text=msg,
+        parse_mode='Markdown'
+    )    
+
+
+# --- Weekly Monday Summary ---
+async def send_weekly_summary(context):
+    conn = database.get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute('''
+            SELECT SUM(quantity), SUM(revenue)
+            FROM sales
+            WHERE sale_date >= CURRENT_DATE - INTERVAL '7 days'
+        ''')
+        result = cur.fetchone()
+        qty = result[0] or 0
+        rev = result[1] or 0
+
+        top = database.get_top_performers(3)
+        top_msg = ""
+        for i, (name, q, profit) in enumerate(top, 1):
+            top_msg += f"{i}. {name} — ₹{round(profit, 2)} profit\n"
+
+        msg = (
+            f"📅 *SKGreenary Weekly Summary*\n\n"
+            f"🛒 Total Units Sold: {qty}\n"
+            f"💰 Total Revenue: ₹{rev}\n\n"
+            f"🏆 *Top Performers:*\n{top_msg}\n"
+            f"Have a great week ahead! 🌿"
+        )
+        await context.bot.send_message(
+            chat_id=OWNER_CHAT_ID,
+            text=msg,
+            parse_mode='Markdown'
+        )
+    finally:
+        cur.close()
+        database.return_connection(conn)
 
 
 # --- Counter Interface ---
@@ -106,7 +204,12 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if action == "cat":
         category = data[1]
         plants = [p for p in database.get_all_plants() if p[2] == category]
-        next_cat = "Outdoor" if category == "Indoor" else "Indoor"
+        if category == "Indoor":
+    next_cat = "Outdoor"
+elif category == "Outdoor":
+    next_cat = "Vegetable"
+else:
+    next_cat = "Indoor"
 
         await query.message.reply_text(f"📋 *{category} Plants:*", parse_mode='Markdown')
         for p in plants:
@@ -174,9 +277,26 @@ if __name__ == '__main__':
     # Start the Telegram Bot
     application = ApplicationBuilder().token(TOKEN).build()
     application.add_handler(CommandHandler('start', start))
+    application.add_handler(CommandHandler('report', report))
+    application.add_handler(CommandHandler('stock', stock))
+    application.add_handler(CommandHandler('top', top))
     application.add_handler(CallbackQueryHandler(handle_callback))
 
+    # Schedule daily 8PM summary (IST = UTC+5:30, so 8PM IST = 14:30 UTC)
+    application.job_queue.run_daily(
+        send_daily_summary,
+        time=datetime.time(14, 30, 0)
+    )
+
+    # Schedule weekly Monday 9AM summary (IST = UTC+5:30, so 9AM IST = 3:30 UTC)
+    application.job_queue.run_daily(
+         send_weekly_summary,
+         time=datetime.time(3, 30, 0),
+         days=(0,)  # 0 = Monday
+)
+
     application.run_polling(drop_pending_updates=True)
+
 
 
 
