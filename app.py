@@ -220,7 +220,7 @@ def store():
     conn = database.get_db_connection()
     cur = conn.cursor()
     try:
-        cur.execute("SELECT name, category, price, stock FROM plants WHERE stock > 0")
+        cur.execute("SELECT name, category, price, stock, COALESCE(image_url, '') FROM plants WHERE stock > 0")
         public_plants = cur.fetchall()
         whatsapp_number = "919744958548"
         return render_template('store.html', plants=public_plants, phone=whatsapp_number)
@@ -229,11 +229,32 @@ def store():
         database.return_connection(conn)
 
 
+@app.route('/place_order', methods=['POST'])
+def place_order():
+    conn = database.get_db_connection()
+    cur = conn.cursor()
+    try:
+        customer_name = request.form.get('customer_name')
+        phone = request.form.get('phone')
+        plant_name = request.form.get('plant_name')
+        quantity = int(request.form.get('quantity'))
+        price = float(request.form.get('plant_price'))
+        total = price * quantity
+        today = datetime.now().date()
+        cur.execute('''INSERT INTO orders (customer_name, phone, plant_name, quantity, total_price, order_date)
+                      VALUES (%s, %s, %s, %s, %s, %s)''',
+                    (customer_name, phone, plant_name, quantity, total, today))
+        conn.commit()
+        return render_template('order_success.html')
+    finally:
+        cur.close()
+        database.return_connection(conn)
 
 
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
