@@ -186,6 +186,12 @@ def delete_plant(id):
     database.delete_plant_by_id(id)
     return redirect(url_for('manage'))
 
+@app.route('/toggle_visibility/<int:id>')
+@login_required
+def toggle_visibility(id):
+    database.toggle_plant_visibility(id)
+    return redirect(url_for('manage'))
+
 @app.route('/edit/<int:id>')
 @login_required
 def edit_plant(id):
@@ -220,7 +226,7 @@ def store():
     conn = database.get_db_connection()
     cur = conn.cursor()
     try:
-        cur.execute("SELECT name, category, price, stock, COALESCE(image_url, '') FROM plants WHERE stock > 0")
+        cur.execute("SELECT name, category, price, stock, COALESCE(image_url, '') FROM plants WHERE stock > 0 AND is_visible = 1")
         public_plants = cur.fetchall()
         whatsapp_number = "919744958548"
         return render_template('store.html', plants=public_plants, phone=whatsapp_number)
