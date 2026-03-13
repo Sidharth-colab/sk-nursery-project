@@ -19,8 +19,7 @@ def login_required(f):
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated
-# Create tables in Neon on startup
-database.create_database()
+
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -164,6 +163,7 @@ def run_simulator():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
