@@ -186,6 +186,34 @@ def delete_plant(id):
     database.delete_plant_by_id(id)
     return redirect(url_for('manage'))
 
+@app.route('/edit/<int:id>')
+@login_required
+def edit_plant(id):
+    conn = database.get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id, name, category, price, stock, min_stock, unit_cost, image_url FROM plants WHERE id = %s", (id,))
+    plant = cur.fetchone()
+    cur.close()
+    database.return_connection(conn)
+    return render_template('edit_plant.html', plant=plant)
+
+@app.route('/edit/<int:id>', methods=['POST'])
+@login_required
+def edit_plant_post(id):
+    conn = database.get_db_connection()
+    cur = conn.cursor()
+    name = request.form.get('name')
+    category = request.form.get('category')
+    price = float(request.form.get('price'))
+    unit_cost = float(request.form.get('cost'))
+    image_url = request.form.get('image_url', '')
+    cur.execute('''UPDATE plants SET name=%s, category=%s, price=%s, unit_cost=%s, image_url=%s WHERE id=%s''',
+                (name, category, price, unit_cost, image_url, id))
+    conn.commit()
+    cur.close()
+    database.return_connection(conn)
+    return redirect(url_for('manage'))
+
 # --- PUBLIC CUSTOMER STORE (Preserved) ---
 @app.route('/store')
 def store():
@@ -206,6 +234,7 @@ def store():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
