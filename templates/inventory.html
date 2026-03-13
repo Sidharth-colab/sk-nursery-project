@@ -25,6 +25,7 @@
                 </div>
                 <div class="col-md-2"><input type="number" name="price" class="form-control" placeholder="Selling Price" required></div>
                 <div class="col-md-2"><input type="number" name="cost" class="form-control" placeholder="Cost Price" required></div>
+                <div class="col-md-4"><input type="text" name="image_url" class="form-control" placeholder="Image URL (optional)"></div>
                 <div class="col-md-2"><button type="submit" class="btn btn-success w-100">Add Plant</button></div>
             </form>
         </div>
@@ -32,15 +33,22 @@
         <div class="card shadow-sm">
             <table class="table table-hover mb-0">
                 <thead class="table-dark">
-                    <tr>
-                        <th>ID</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th>
-                    </tr>
+                        <tr>
+                            <th>ID</th><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th>
+                      </tr>
                 </thead>
                 <tbody>
                     {% for p in plants %}
                     <tr>
-                        <td>{{ p[0] }}</td>
-                        <td><strong>{{ p[1] }}</strong></td>
+                       <td>{{ p[0] }}</td>
+<td>
+    {% if p[7] %}
+    <img src="{{ p[7] }}" width="40" height="40" style="object-fit:cover; border-radius:5px;">
+    {% else %}
+    🌿
+    {% endif %}
+</td>
+<td><strong>{{ p[1] }}</strong></td>
                         <td>{{ p[2] }}</td>
                         <td>₹{{ p[3] }}</td>
                         <td>
@@ -62,3 +70,4 @@
 </body>
 
 </html>
+
