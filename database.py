@@ -135,7 +135,7 @@ def record_real_sale(plant_id, quantity):
 def get_all_plants():
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id, name, category, price, stock, min_stock, unit_cost, image_url FROM plants ORDER BY name")
+    cur.execute("SELECT id, name, category, price, stock, min_stock, unit_cost, image_url, is_visible FROM plants ORDER BY name")
     plants = cur.fetchall()
     cur.close()
     return_connection(conn)
