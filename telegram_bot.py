@@ -28,6 +28,20 @@ def run_flask():
 
 # --- Block 1: Bot Setup ---
 TOKEN = os.environ.get('BOT_TOKEN', '8793225838:AAFNb8kz1qzVDKSnDssZ91ie17Cn5wplPa0')
+OWNER_CHAT_ID = 8791438325
+
+async def send_low_stock_alert(context, plant_name, remaining_stock):
+    message = (
+        f"⚠️ *Low Stock Alert!*\n\n"
+        f"🌿 *{plant_name}* is running low!\n"
+        f"📦 Only *{remaining_stock}* units remaining.\n\n"
+        f"Please restock soon! 🙏"
+    )
+    await context.bot.send_message(
+        chat_id=OWNER_CHAT_ID,
+        text=message,
+        parse_mode='Markdown'
+    )
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
@@ -131,13 +145,22 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.reply_text(summary, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
     elif action == "final":
-        basket = context.user_data.get('basket', {})
-        for p_id, qty in basket.items():
-            database.record_real_sale(p_id, qty)
-        context.user_data['basket'] = {}
-        await query.message.reply_text("✅ *Sale Processed!* Data synced to Neon.")
-        await asyncio.sleep(2)
-        await start(update, context)
+    basket = context.user_data.get('basket', {})
+    for p_id, qty in basket.items():
+        database.record_real_sale(p_id, qty)
+        # Check stock after sale
+        plants = database.get_all_plants()
+        plant = next((x for x in plants if x[0] == p_id), None)
+        if plant:
+            remaining = plant[4]  # stock
+            min_stock = plant[5]  # min_stock
+            if remaining <= min_stock:
+                await send_low_stock_alert(context, plant[1], remaining)
+    context.user_data['basket'] = {}
+    await query.message.reply_text("✅ *Sale Processed!* Data synced to Neon.")
+    await asyncio.sleep(2)
+    await start(update, context)
+    
 
     elif action == "run":
         d_qty, d_rev, d_profit = database.get_financial_report('day')
@@ -154,5 +177,6 @@ if __name__ == '__main__':
     application.add_handler(CallbackQueryHandler(handle_callback))
 
     application.run_polling(drop_pending_updates=True)
+
 
 
