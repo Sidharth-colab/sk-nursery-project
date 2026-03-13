@@ -23,13 +23,17 @@
 
     <div class="container">
         <div class="row">
-            {% for name, cat, price, stock in plants %}
+            {% for name, cat, price, stock, image_url in plants %}
             <div class="col-md-4 mb-4">
                 <div class="card plant-card shadow-sm h-100">
                     <div class="card-body text-center">
-                        <span class="badge bg-secondary mb-2">{{ cat }}</span>
-
-                        <h4 class="card-title">{{ name }}</h4>
+    {% if image_url %}
+    <img src="{{ image_url }}" class="img-fluid mb-3 rounded" style="height: 150px; width: 100%; object-fit: cover;">
+    {% else %}
+    <div class="bg-light d-flex align-items-center justify-content-center mb-3 rounded" style="height: 150px; font-size: 4rem;">🌿</div>
+    {% endif %}
+    <span class="badge bg-secondary mb-2">{{ cat }}</span>
+    <h4 class="card-title">{{ name }}</h4>
 
                         <p class="text-success fw-bold fs-4">₹{{ price }}</p>
 
@@ -60,4 +64,5 @@
     </div>
 
 </body>
+
 </html>
