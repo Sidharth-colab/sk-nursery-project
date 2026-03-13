@@ -1,41 +1,31 @@
 import os
 import psycopg2
-from psycopg2 import pool
 from datetime import datetime
 
 # --- Block 1: The Cloud Connection (Updated for Render/IPv4 Compatibility) ---
 # We use port 6543 (Transaction Pooler) because port 5432 is often IPv6-only
+# --- Block 1: The Cloud Connection (Neon PostgreSQL) ---
 DB_URL = os.environ.get('DATABASE_URL', "postgresql://neondb_owner:npg_XNBjnH9Oep7S@ep-frosty-cake-adiwskfg-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require")
 
-connection_pool = None
-
-def init_pool():
-    global connection_pool
-    if connection_pool is None:
-        try:
-            # We add connect_timeout=10 to give the network time to establish the bridge
-            connection_pool = psycopg2.pool.SimpleConnectionPool(1, 10, DB_URL, connect_timeout=10, keepalives=1, keepalives_idle=30, keepalives_interval=10, keepalives_count=5)
-            print("✅ Connected to Neon via Transaction Pooler")
-        except Exception as e:
-            print(f"❌ Connection Error during initialization: {e}")
-
-# Try to initialize immediately on startup
-init_pool()
-
 def get_db_connection():
-    global connection_pool
-    # If the pool failed at startup, try to fix it now
-    if connection_pool is None:
-        init_pool()
-        
-    if connection_pool is None:
-        raise Exception("Database connection pool not initialized. Check your Render Environment 'DATABASE_URL'.")
-    
-    return connection_pool.getconn()
+    try:
+        conn = psycopg2.connect(DB_URL, connect_timeout=10)
+        return conn
+    except Exception as e:
+        print(f"❌ Connection Error: {e}")
+        raise e
 
 def return_connection(conn):
-    if connection_pool and conn:
-        connection_pool.putconn(conn)
+    if conn:
+        try:
+            conn.close()
+        except:
+            pass
+
+def init_pool():
+    print("✅ Connected to Neon via Direct Connection")
+
+init_pool()
 
 # --- Block 2: Database Setup (All Tables Included) ---
 def create_database():
@@ -207,6 +197,7 @@ def get_top_performers(limit=10):
 
 if __name__ == "__main__":
     create_database()
+
 
 
 
