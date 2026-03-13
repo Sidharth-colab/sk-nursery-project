@@ -151,18 +151,12 @@ def store():
         database.return_connection(conn)
 
 
-@app.route('/run-simulator-sk2026')
-def run_simulator():
-    try:
-        import simulator
-        simulator.run_simulation()
-        return "✅ Simulation complete! 180 days of sales data generated."
-    except Exception as e:
-        return f"❌ Error: {e}"
+
 
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
