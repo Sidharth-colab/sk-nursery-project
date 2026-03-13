@@ -161,12 +161,12 @@ def manage():
 @app.route('/add_plant', methods=['POST'])
 @login_required
 def add_plant():
-    """Web form for adding new plants."""
     name = request.form.get('name')
     cat = request.form.get('category')
     price = float(request.form.get('price'))
     cost = float(request.form.get('cost'))
-    database.add_new_plant(name, cat, price, cost)
+    image_url = request.form.get('image_url', '')
+    database.add_new_plant(name, cat, price, cost, image_url)
     return redirect(url_for('manage'))
 
 @app.route('/update_stock', methods=['POST'])
@@ -205,6 +205,7 @@ def store():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
