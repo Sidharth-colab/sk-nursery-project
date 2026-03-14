@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Expense Tracker</title>
+</head>
+<body class="bg-light">
+    <div class="container mt-4 pb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>💰 Expense Tracker</h2>
+            <a href="/" class="btn btn-outline-success">Back to Dashboard</a>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-6 col-md-3 mb-3">
+                <div class="card bg-success text-white p-3 text-center border-0 shadow-sm">
+                    <h6>This Month Revenue</h6>
+                    <h4 class="fw-bold">₹{{ month_revenue|round(2) }}</h4>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 mb-3">
+                <div class="card bg-danger text-white p-3 text-center border-0 shadow-sm">
+                    <h6>This Month Expenses</h6>
+                    <h4 class="fw-bold">₹{{ total_month|round(2) }}</h4>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 mb-3">
+                <div class="card text-white p-3 text-center border-0 shadow-sm
+                    {{ 'bg-success' if real_profit > 0 else 'bg-danger' }}">
+                    <h6>Real Profit</h6>
+                    <h4 class="fw-bold">₹{{ real_profit|round(2) }}</h4>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 mb-3">
+                <div class="card bg-dark text-white p-3 text-center border-0 shadow-sm">
+                    <h6>Total Expenses Ever</h6>
+                    <h4 class="fw-bold">₹{{ total_all|round(2) }}</h4>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Expense Form -->
+        <div class="card shadow-sm p-4 mb-4 border-0">
+            <h5 class="mb-3">➕ Add New Expense</h5>
+            <form action="/add_expense" method="POST" class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" name="description" class="form-control"
+                           placeholder="Description (e.g. Fertilizer)" required>
+                </div>
+                <div class="col-md-2">
+                    <input type="number" name="amount" class="form-control"
+                           placeholder="Amount ₹" step="0.01" required>
+                </div>
+                <div class="col-md-3">
+                    <select name="category" class="form-select">
+                        <option value="Fertilizer">🌱 Fertilizer</option>
+                        <option value="Pots">🪴 Pots</option>
+                        <option value="Soil">🟤 Soil</option>
+                        <option value="Water">💧 Water</option>
+                        <option value="Transport">🚗 Transport</option>
+                        <option value="Labour">👷 Labour</option>
+                        <option value="Electricity">⚡ Electricity</option>
+                        <option value="Tools">🔧 Tools</option>
+                        <option value="General">📦 General</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-danger w-100">
+                        <i class="fas fa-plus"></i> Add Expense
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- This Month Expenses -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">📅 This Month's Expenses</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in month_expenses %}
+                        <tr>
+                            <td>{{ e[4] }}</td>
+                            <td>{{ e[1] }}</td>
+                            <td>
+                                <span class="badge bg-secondary">{{ e[3] }}</span>
+                            </td>
+                            <td class="text-danger fw-bold">₹{{ e[2] }}</td>
+                            <td>
+                                <a href="/delete_expense/{{ e[0] }}"
+                                   class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Delete this expense?')">
+                                    🗑️
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                No expenses this month!
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>
