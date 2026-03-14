@@ -10,8 +10,30 @@
     <div class="card shadow-lg p-5 text-center" style="max-width: 400px; border-radius: 20px;">
         <div style="font-size: 4rem;">🎉</div>
         <h2 class="text-success fw-bold mt-3">Order Placed!</h2>
-        <p class="text-muted mt-2">Thank you! We will contact you shortly to confirm your order.</p>
-        <a href="/store" class="btn btn-success mt-3 fw-bold">← Back to Store</a>
+        <p class="text-muted mt-2">Thank you <strong>{{ customer_name }}</strong>!<br>
+        Your order for <strong>{{ plant_name }} × {{ quantity }}</strong> has been received.</p>
+        <p class="fw-bold text-success fs-5">Total: ₹{{ total }}</p>
+        <p class="text-muted small">We will contact you shortly on <strong>{{ phone }}</strong></p>
+        <a id="waBtn" href="#" target="_blank"
+           class="btn btn-success mt-3 fw-bold w-100 py-2">
+            <i class="fab fa-whatsapp"></i> Get WhatsApp Confirmation
+        </a>
+        <a href="/store" class="btn btn-outline-success mt-2 w-100">← Back to Store</a>
     </div>
+
+    <script>
+        const phone = "919744958548";
+        const name = "{{ customer_name }}";
+        const plant = "{{ plant_name }}";
+        const qty = "{{ quantity }}";
+        const total = "{{ total }}";
+        const msg = `Hello SK Greenary! 🌿\n\nI just placed an order:\n👤 Name: ${name}\n🌿 Plant: ${plant}\n🔢 Qty: ${qty}\n💰 Total: ₹${total}\n\nPlease confirm my order!`;
+        document.getElementById('waBtn').href = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+
+        // Auto open WhatsApp after 2 seconds
+        setTimeout(() => {
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+        }, 2000);
+    </script>
 </body>
 </html>
