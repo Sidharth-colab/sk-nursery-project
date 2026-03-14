@@ -282,6 +282,46 @@ def place_order():
         database.return_connection(conn)
 
 
+@app.route('/orders')
+@login_required
+def orders():
+    conn = database.get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            SELECT id, customer_name, phone, plant_name, quantity, 
+                   total_price, status, order_date, address
+            FROM orders
+            ORDER BY order_date DESC, id DESC
+        """)
+        all_orders = cur.fetchall()
+        return render_template('orders.html', orders=all_orders)
+    finally:
+        cur.close()
+        database.return_connection(conn)
+
+@app.route('/complete_order/<int:id>')
+@login_required
+def complete_order(id):
+    conn = database.get_db_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE orders SET status = 'completed' WHERE id = %s", (id,))
+    conn.commit()
+    cur.close()
+    database.return_connection(conn)
+    return redirect(url_for('orders'))
+
+@app.route('/cancel_order/<int:id>')
+@login_required
+def cancel_order(id):
+    conn = database.get_db_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE orders SET status = 'cancelled' WHERE id = %s", (id,))
+    conn.commit()
+    cur.close()
+    database.return_connection(conn)
+    return redirect(url_for('orders'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)
