@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Customer Orders</title>
+</head>
+<body class="bg-light">
+    <div class="container mt-4 pb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>📦 Customer Orders</h2>
+            <a href="/" class="btn btn-outline-success">Back to Dashboard</a>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="row mb-4">
+            <div class="col-4">
+                <div class="card bg-warning text-white p-3 text-center border-0 shadow-sm">
+                    <h6>Pending</h6>
+                    <h3 class="fw-bold">{{ orders|selectattr(6, 'equalto', 'pending')|list|length }}</h3>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card bg-success text-white p-3 text-center border-0 shadow-sm">
+                    <h6>Completed</h6>
+                    <h3 class="fw-bold">{{ orders|selectattr(6, 'equalto', 'completed')|list|length }}</h3>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card bg-danger text-white p-3 text-center border-0 shadow-sm">
+                    <h6>Cancelled</h6>
+                    <h3 class="fw-bold">{{ orders|selectattr(6, 'equalto', 'cancelled')|list|length }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders List -->
+        {% for o in orders %}
+        <div class="card shadow-sm mb-3 border-0
+            {% if o[6] == 'completed' %}border-start border-success border-4
+            {% elif o[6] == 'cancelled' %}border-start border-danger border-4
+            {% else %}border-start border-warning border-4{% endif %}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5 class="mb-1">{{ o[3] }} × {{ o[4] }}</h5>
+                        <p class="mb-1 text-muted small">📅 {{ o[7] }}</p>
+                    </div>
+                    <div class="text-end">
+                        <h5 class="text-success fw-bold">₹{{ o[5] }}</h5>
+                        <span class="badge 
+                            {% if o[6] == 'completed' %}bg-success
+                            {% elif o[6] == 'cancelled' %}bg-danger
+                            {% else %}bg-warning text-dark{% endif %}">
+                            {{ o[6] }}
+                        </span>
+                    </div>
+                </div>
+                <hr class="my-2">
+                <div class="row">
+                    <div class="col-6">
+                        <p class="mb-1"><i class="fas fa-user me-2 text-success"></i><strong>{{ o[1] }}</strong></p>
+                        <p class="mb-1"><i class="fas fa-phone me-2 text-success"></i>
+                            <a href="tel:{{ o[2] }}">{{ o[2] }}</a>
+                        </p>
+                        <p class="mb-1"><i class="fas fa-map-marker-alt me-2 text-success"></i>{{ o[8] or 'No address' }}</p>
+                    </div>
+                    <div class="col-6 d-flex flex-column gap-2 justify-content-center">
+                        {% if o[6] == 'pending' %}
+                        <a href="https://wa.me/91{{ o[2] }}?text=Hello%20{{ o[1] }}!%20Your%20order%20for%20{{ o[3] }}%20is%20confirmed.%20Total:%20₹{{ o[5] }}"
+                           target="_blank" class="btn btn-sm btn-success">
+                            <i class="fab fa-whatsapp"></i> Confirm via WA
+                        </a>
+                        <a href="/complete_order/{{ o[0] }}" class="btn btn-sm btn-primary">
+                            ✅ Mark Complete
+                        </a>
+                        <a href="/cancel_order/{{ o[0] }}" class="btn btn-sm btn-outline-danger"
+                           onclick="return confirm('Cancel this order?')">
+                            ❌ Cancel
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="fas fa-box-open fa-3x mb-3"></i>
+            <p>No orders yet!</p>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
