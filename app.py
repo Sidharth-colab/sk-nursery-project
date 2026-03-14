@@ -328,6 +328,47 @@ def cancel_order(id):
     return redirect(url_for('orders'))
 
 
+
+# --- EXPENSE TRACKER ---
+@app.route('/expenses')
+@login_required
+def expenses():
+    all_expenses = database.get_expenses('all')
+    month_expenses = database.get_expenses('month')
+    total_month = database.get_total_expenses('month')
+    total_all = database.get_total_expenses('all')
+    
+    # Get monthly revenue
+    m_qty, m_rev, m_profit = database.get_financial_report('month')
+    
+    # Real profit = revenue - expenses
+    real_profit = m_rev - total_month
+    
+    return render_template('expenses.html',
+                           all_expenses=all_expenses,
+                           month_expenses=month_expenses,
+                           total_month=total_month,
+                           total_all=total_all,
+                           month_revenue=m_rev,
+                           real_profit=real_profit)
+
+@app.route('/add_expense', methods=['POST'])
+@login_required
+def add_expense():
+    description = request.form.get('description')
+    amount = float(request.form.get('amount'))
+    category = request.form.get('category')
+    database.add_expense(description, amount, category)
+    return redirect(url_for('expenses'))
+
+@app.route('/delete_expense/<int:id>')
+@login_required
+def delete_expense(id):
+    database.delete_expense(id)
+    return redirect(url_for('expenses'))
+
+
+
 if __name__ == '__main__':
     app.run(debug=True)
 
