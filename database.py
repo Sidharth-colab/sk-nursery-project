@@ -104,6 +104,19 @@ def create_database():
             ALTER TABLE orders ADD COLUMN IF NOT EXISTS address TEXT DEFAULT ''
     ''')
 
+
+    cur.execute('''
+            CREATE TABLE IF NOT EXISTS expenses (
+            id SERIAL PRIMARY KEY,
+            description TEXT NOT NULL,
+            amount FLOAT NOT NULL,
+            category TEXT DEFAULT 'General',
+            expense_date DATE
+          )
+    ''')
+
+
+    
     conn.commit()
     cur.close()
     return_connection(conn)
