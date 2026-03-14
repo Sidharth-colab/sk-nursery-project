@@ -153,7 +153,9 @@ def index():
                                recent_sales=recent_sales,
                                top_plants=top_plants,
                                this_month_rev=this_month_rev,
-                               last_month_rev=last_month_rev)
+                               last_month_rev=last_month_rev,
+                               seasonal_data=seasonal_data)
+
 
     except Exception as e:
         print(f"⚠️ Dashboard Load Error: {e}")
@@ -169,7 +171,8 @@ def index():
                                recent_sales=[],
                                top_plants=[],
                                this_month_rev=0,
-                               last_month_rev=0)
+                               last_month_rev=0,
+                               seasonal_data={}))
 
 # --- INVENTORY MANAGEMENT ---
 
