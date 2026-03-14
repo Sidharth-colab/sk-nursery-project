@@ -107,6 +107,27 @@ def index():
         this_month_rev = cur.fetchone()[0] or 0
 
         cur.execute("""
+            SELECT month, plant_name, SUM(quantity) as total_qty
+            FROM sales
+            GROUP BY month, plant_name
+            ORDER BY month, total_qty DESC
+        """)
+        seasonal_raw = cur.fetchall()
+
+        # Group by month
+        seasonal_data = {}
+        month_names = {1:'Jan', 2:'Feb', 3:'Mar', 4:'Apr', 5:'May', 6:'Jun',
+                       7:'Jul', 8:'Aug', 9:'Sep', 10:'Oct', 11:'Nov', 12:'Dec'}
+        for month, plant, qty in seasonal_raw:
+            month_name = month_names.get(month, str(month))
+            if month_name not in seasonal_data:
+                seasonal_data[month_name] = []
+            if len(seasonal_data[month_name]) < 3:  # top 3 per month
+                seasonal_data[month_name].append((plant, qty))
+
+                
+
+        cur.execute("""
             SELECT SUM(revenue) FROM sales
             WHERE EXTRACT(MONTH FROM sale_date) = EXTRACT(MONTH FROM CURRENT_DATE - INTERVAL '1 month')
             AND EXTRACT(YEAR FROM sale_date) = EXTRACT(YEAR FROM CURRENT_DATE - INTERVAL '1 month')
