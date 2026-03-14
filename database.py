@@ -98,7 +98,11 @@ def create_database():
                 status TEXT DEFAULT 'pending',
                 order_date DATE
             )
-        ''')
+    ''')
+
+    cur.execute('''
+            ALTER TABLE orders ADD COLUMN IF NOT EXISTS address TEXT DEFAULT ''
+    ''')
 
     conn.commit()
     cur.close()
