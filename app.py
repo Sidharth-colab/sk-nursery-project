@@ -266,14 +266,15 @@ def place_order():
     try:
         customer_name = request.form.get('customer_name')
         phone = request.form.get('phone')
+        address = request.form.get('address', '')
         plant_name = request.form.get('plant_name')
         quantity = int(request.form.get('quantity'))
         price = float(request.form.get('plant_price'))
         total = price * quantity
         today = datetime.now().date()
-        cur.execute('''INSERT INTO orders (customer_name, phone, plant_name, quantity, total_price, order_date)
-                      VALUES (%s, %s, %s, %s, %s, %s)''',
-                    (customer_name, phone, plant_name, quantity, total, today))
+        cur.execute('''INSERT INTO orders (customer_name, phone, plant_name, quantity, total_price, order_date, address)
+                      VALUES (%s, %s, %s, %s, %s, %s, %s)''',
+                    (customer_name, phone, plant_name, quantity, total, today, address))
         conn.commit()
         return render_template('order_success.html')
     finally:
