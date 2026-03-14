@@ -276,7 +276,12 @@ def place_order():
                       VALUES (%s, %s, %s, %s, %s, %s, %s)''',
                     (customer_name, phone, plant_name, quantity, total, today, address))
         conn.commit()
-        return render_template('order_success.html')
+        return render_template('order_success.html',
+                               customer_name=customer_name,
+                               plant_name=plant_name,
+                               quantity=quantity,
+                               total=total,
+                               phone=phone)
     finally:
         cur.close()
         database.return_connection(conn)
