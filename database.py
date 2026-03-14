@@ -243,6 +243,62 @@ def get_top_performers(limit=10):
     return_connection(conn)
     return data
 
+
+# --- Block 7: Expense Tracking ---
+def add_expense(description, amount, category):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    today = datetime.now().date()
+    cur.execute('''INSERT INTO expenses (description, amount, category, expense_date)
+                  VALUES (%s, %s, %s, %s)''', (description, amount, category, today))
+    conn.commit()
+    cur.close()
+    return_connection(conn)
+    return True
+
+def get_expenses(period='month'):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        if period == 'month':
+            cur.execute('''SELECT id, description, amount, category, expense_date
+                          FROM expenses
+                          WHERE EXTRACT(MONTH FROM expense_date) = EXTRACT(MONTH FROM CURRENT_DATE)
+                          AND EXTRACT(YEAR FROM expense_date) = EXTRACT(YEAR FROM CURRENT_DATE)
+                          ORDER BY expense_date DESC''')
+        else:
+            cur.execute('''SELECT id, description, amount, category, expense_date
+                          FROM expenses
+                          ORDER BY expense_date DESC LIMIT 50''')
+        return cur.fetchall()
+    finally:
+        cur.close()
+        return_connection(conn)
+
+def get_total_expenses(period='month'):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        if period == 'month':
+            cur.execute('''SELECT COALESCE(SUM(amount), 0) FROM expenses
+                          WHERE EXTRACT(MONTH FROM expense_date) = EXTRACT(MONTH FROM CURRENT_DATE)
+                          AND EXTRACT(YEAR FROM expense_date) = EXTRACT(YEAR FROM CURRENT_DATE)''')
+        else:
+            cur.execute('SELECT COALESCE(SUM(amount), 0) FROM expenses')
+        return cur.fetchone()[0]
+    finally:
+        cur.close()
+        return_connection(conn)
+
+def delete_expense(expense_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM expenses WHERE id = %s", (expense_id,))
+    conn.commit()
+    cur.close()
+    return_connection(conn)
+    return True
+    
 if __name__ == "__main__":
     create_database()
 
