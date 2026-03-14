@@ -172,7 +172,7 @@ def index():
                                top_plants=[],
                                this_month_rev=0,
                                last_month_rev=0,
-                               seasonal_data={}))
+                               seasonal_data={})
 
 # --- INVENTORY MANAGEMENT ---
 
