@@ -141,8 +141,8 @@ def record_real_sale(plant_id, quantity):
             is_weekend = 1 if datetime.now().weekday() >= 5 else 0
 
             cur.execute("UPDATE plants SET stock = %s, last_updated = %s WHERE id = %s", (new_stock, today, plant_id))
-            cur.execute('''INSERT INTO sales (plant_name, category, quantity, revenue, sale_date, month, is_weekend)
-                              VALUES (%s, %s, %s, %s, %s, %s, %s)''', (name, cat, quantity, revenue, today, current_month, is_weekend))
+            cur.execute('''INSERT INTO sales (plant_id, plant_name, category, quantity, revenue, sale_date, month, is_weekend)
+                              VALUES (%s, %s, %s, %s, %s, %s, %s, %s)''', (plant_id, name, cat, quantity, revenue, today, current_month, is_weekend))
             conn.commit()
             return True, f"Sold {quantity} {name}(s)."
         return False, "Insufficient stock."
