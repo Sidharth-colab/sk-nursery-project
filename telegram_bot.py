@@ -32,6 +32,8 @@ TOKEN = os.environ.get('BOT_TOKEN')
 if not TOKEN:
     raise RuntimeError("BOT_TOKEN environment variable is not set!")
 OWNER_CHAT_ID = 8791438325
+def is_owner(chat_id):
+    return chat_id == OWNER_CHAT_ID
 
 async def send_low_stock_alert(context, plant_name, remaining_stock):
     message = (
