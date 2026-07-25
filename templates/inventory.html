@@ -59,15 +59,21 @@
                             </form>
                         </td>
                         <td>
-    {% if p[8] == 1 %}
-                            <a href="/toggle_visibility/{{ p[0] }}" class="btn btn-sm btn-success">👁 Visible</a>
-                            {% else %}
-                            <a href="/toggle_visibility/{{ p[0] }}" class="btn btn-sm btn-secondary">🙈 Hidden</a>
-                            {% endif %}
+{% if p[8] == 1 %}
+    <form action="/toggle_visibility/{{ p[0] }}" method="POST" style="display:inline">
+        <button type="submit" class="btn btn-sm btn-success">👁 Visible</button>
+    </form>
+{% else %}
+    <form action="/toggle_visibility/{{ p[0] }}" method="POST" style="display:inline">
+        <button type="submit" class="btn btn-sm btn-secondary">🙈 Hidden</button>
+    </form>
+{% endif %}
 </td>
 <td>
     <a href="/edit/{{ p[0] }}" class="btn btn-sm btn-warning me-1">Edit</a>
-    <a href="/delete/{{ p[0] }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this plant?')">Delete</a>
+<form action="/delete/{{ p[0] }}" method="POST" style="display:inline" onsubmit="return confirm('Delete this plant?')">
+    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+</form>
 </td>
                     </tr>
                     {% endfor %}
