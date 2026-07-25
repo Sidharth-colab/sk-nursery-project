@@ -217,11 +217,11 @@ def get_financial_report(period='day'):
         if period == 'day':
             date_val = datetime.now().date()
             cur.execute('''SELECT SUM(s.quantity), SUM(s.revenue), SUM(s.quantity * p.unit_cost)
-                           FROM sales s JOIN plants p ON s.plant_name = p.name WHERE s.sale_date = %s''', (date_val,))
+            FROM sales s JOIN plants p ON s.plant_id = p.id WHERE s.sale_date = %s''', (date_val,))
         else:
             month_val = datetime.now().month
             cur.execute('''SELECT SUM(s.quantity), SUM(s.revenue), SUM(s.quantity * p.unit_cost)
-                           FROM sales s JOIN plants p ON s.plant_name = p.name WHERE s.month = %s''', (month_val,))
+            FROM sales s JOIN plants p ON s.plant_id = p.id WHERE s.month = %s''', (month_val,))
 
         result = cur.fetchone()
         if not result or result[0] is None: return 0, 0, 0
@@ -236,10 +236,11 @@ def get_top_performers(limit=10):
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute('''
-        SELECT s.plant_name, SUM(s.quantity), SUM(s.revenue - (s.quantity * p.unit_cost)) as profit
-        FROM sales s JOIN plants p ON s.plant_name = p.name
-        GROUP BY s.plant_name ORDER BY profit DESC LIMIT %s
+    SELECT s.plant_name, SUM(s.quantity), SUM(s.revenue - (s.quantity * p.unit_cost)) as profit
+    FROM sales s JOIN plants p ON s.plant_id = p.id
+    GROUP BY s.plant_name ORDER BY profit DESC LIMIT %s
     ''', (limit,))
+    
     data = cur.fetchall()
     cur.close()
     return_connection(conn)
