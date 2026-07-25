@@ -73,13 +73,12 @@
                            target="_blank" class="btn btn-sm btn-success">
                             <i class="fab fa-whatsapp"></i> Confirm via WA
                         </a>
-                        <a href="/complete_order/{{ o[0] }}" class="btn btn-sm btn-primary">
-                            ✅ Mark Complete
-                        </a>
-                        <a href="/cancel_order/{{ o[0] }}" class="btn btn-sm btn-outline-danger"
-                           onclick="return confirm('Cancel this order?')">
-                            ❌ Cancel
-                        </a>
+                        <form action="/complete_order/{{ o[0] }}" method="POST" style="display:inline">
+                          <button type="submit" class="btn btn-sm btn-primary">✅ Mark Complete</button>
+                        </form>
+                        <form action="/cancel_order/{{ o[0] }}" method="POST" style="display:inline" onsubmit="return confirm('Cancel this order?')">
+                          <button type="submit" class="btn btn-sm btn-outline-danger">❌ Cancel</button>
+                        </form>
                         {% endif %}
                     </div>
                 </div>
