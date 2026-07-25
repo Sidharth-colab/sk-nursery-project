@@ -205,14 +205,14 @@ def update_stock():
     database.update_stock_manually(p_id, qty)
     return redirect(url_for('manage'))
 
-@app.route('/delete/<int:id>')
+@app.route('/delete/<int:id>', methods=['POST'])
 @login_required
 def delete_plant(id):
     """Web button for deleting plants."""
     database.delete_plant_by_id(id)
     return redirect(url_for('manage'))
 
-@app.route('/toggle_visibility/<int:id>')
+@app.route('/toggle_visibility/<int:id>', methods=['POST'])
 @login_required
 def toggle_visibility(id):
     database.toggle_plant_visibility(id)
@@ -307,7 +307,7 @@ def orders():
         cur.close()
         database.return_connection(conn)
 
-@app.route('/complete_order/<int:id>')
+@app.route('/complete_order/<int:id>', methods=['POST'])
 @login_required
 def complete_order(id):
     conn = database.get_db_connection()
@@ -318,7 +318,7 @@ def complete_order(id):
     database.return_connection(conn)
     return redirect(url_for('orders'))
 
-@app.route('/cancel_order/<int:id>')
+@app.route('/cancel_order/<int:id>', methods=['POST'])
 @login_required
 def cancel_order(id):
     conn = database.get_db_connection()
