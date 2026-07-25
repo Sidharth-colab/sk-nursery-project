@@ -95,7 +95,7 @@ def index():
         # Top performers
         cur.execute("""
             SELECT s.plant_name, SUM(s.quantity), SUM(s.revenue - (s.quantity * p.unit_cost)) as profit
-            FROM sales s JOIN plants p ON s.plant_name = p.name
+            FROM sales s JOIN plants p ON s.plant_id = p.id
             GROUP BY s.plant_name ORDER BY profit DESC LIMIT 5
         """)
         top_plants = cur.fetchall()
