@@ -53,6 +53,10 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 # --- Start & Main Menu ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not is_owner(update.effective_chat.id):
+        await context.bot.send_message(chat_id=update.effective_chat.id, text="🚫 This bot is private.")
+        return
+
     if 'basket' not in context.user_data:
         context.user_data['basket'] = {}
 
