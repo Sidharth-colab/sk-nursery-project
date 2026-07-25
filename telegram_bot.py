@@ -79,6 +79,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 async def report(update, context):
+    if not is_owner(update.effective_chat.id):
+        await update.message.reply_text("🚫 This bot is private.")
+        return
     d_qty, d_rev, d_profit = database.get_financial_report('day')
     m_qty, m_rev, m_profit = database.get_financial_report('month')
     msg = (
@@ -96,6 +99,9 @@ async def report(update, context):
 
 
 async def stock(update, context):
+    if not is_owner(update.effective_chat.id):
+        await update.message.reply_text("🚫 This bot is private.")
+        return
     low = database.get_all_plants()
     msg = "📦 *Current Stock:*\n\n"
     for p in low:
@@ -105,6 +111,9 @@ async def stock(update, context):
 
 # --- Top Sellers Command ---
 async def top(update, context):
+    if not is_owner(update.effective_chat.id):
+        await update.message.reply_text("🚫 This bot is private.")
+        return
     data = database.get_top_performers(5)
     if not data:
         await update.message.reply_text("No sales data yet!")
@@ -205,6 +214,9 @@ async def show_plant_counter(query, plant_id, current_qty=1):
 # --- Master Callback Handler ---
 async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
+    if not is_owner(query.from_user.id):
+        await query.answer("🚫 This bot is private.", show_alert=True)
+        return
     await query.answer()
     data = query.data.split('_')
     action = data[0]
