@@ -5,8 +5,10 @@ from datetime import datetime
 # --- Block 1: The Cloud Connection (Updated for Render/IPv4 Compatibility) ---
 # We use port 6543 (Transaction Pooler) because port 5432 is often IPv6-only
 # --- Block 1: The Cloud Connection (Neon PostgreSQL) ---
-DB_URL = os.environ.get('DATABASE_URL', "postgresql://neondb_owner:npg_XNBjnH9Oep7S@ep-frosty-cake-adiwskfg-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require")
-
+DB_URL = os.environ.get('DATABASE_URL')
+if not DB_URL:
+    raise RuntimeError("DATABASE_URL environment variable is not set!")
+    
 def get_db_connection():
     try:
         conn = psycopg2.connect(DB_URL, connect_timeout=10)
