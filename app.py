@@ -7,8 +7,10 @@ import inventory
 import forecaster
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'skgreenary2026secure')
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'nursery2525')
+app.secret_key = os.environ.get('SECRET_KEY')
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD')
+if not app.secret_key or not ADMIN_PASSWORD:
+    raise RuntimeError("SECRET_KEY and ADMIN_PASSWORD must be set as environment variables!")
 
 database.create_database()
 
