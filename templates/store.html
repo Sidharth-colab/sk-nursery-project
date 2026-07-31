@@ -244,8 +244,13 @@
 
     <!-- Plant Grid -->
     <div class="plant-grid" id="plantGrid">
-        {% for name, cat, price, stock, image_url in plants %}
-        <div class="plant-card plant-card-wrapper" data-name="{{ name }}" data-cat="{{ cat }}">
+        {% for id, name, cat, price, stock, image_url in plants %}
+        <div class="plant-card plant-card-wrapper" data-name="{{ name }}" data-cat="{{ cat }}"
+             onclick="window.location.href='/plant/{{ id }}'">
+
+
+
+            
             {% if image_url %}
             <img src="{{ image_url }}" class="plant-img" alt="{{ name }}">
             {% else %}
@@ -354,6 +359,16 @@
                 document.getElementById('modalTotal').value = '₹' + (this.value * price);
             };
             new bootstrap.Modal(document.getElementById('orderModal')).show();
+        }
+        // If arriving from a plant detail page with an "add" request, add it to cart automatically
+        const urlParams = new URLSearchParams(window.location.search);
+        const addName = urlParams.get('add');
+        const addPrice = urlParams.get('price');
+        if (addName && addPrice) {
+            const btnEl = document.getElementById('cartbtn-' + addName.replace(/ /g, '_'));
+            addToCart(addName, parseFloat(addPrice), btnEl || document.createElement('button'));
+            new bootstrap.Modal(document.getElementById('cartModal')).show();
+            window.history.replaceState({}, document.title, '/store'); // clean up the URL
         }
     </script>
 </body>
