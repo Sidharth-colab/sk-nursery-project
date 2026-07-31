@@ -252,13 +252,31 @@ def store():
     conn = database.get_db_connection()
     cur = conn.cursor()
     try:
-        cur.execute("SELECT name, category, price, stock, COALESCE(image_url, '') FROM plants WHERE stock > 0 AND is_visible = 1")
+        cur.execute("SELECT id, name, category, price, stock, COALESCE(image_url, '') FROM plants WHERE stock > 0 AND is_visible = 1")
         public_plants = cur.fetchall()
         whatsapp_number = "919744958548"
         return render_template('store.html', plants=public_plants, phone=whatsapp_number)
     finally:
         cur.close()
         database.return_connection(conn)
+
+@app.route('/plant/<int:id>')
+def plant_detail(id):
+    conn = database.get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("SELECT id, name, category, price, stock, COALESCE(image_url, '') FROM plants WHERE id = %s AND is_visible = 1", (id,))
+        plant = cur.fetchone()
+        if not plant:
+            return redirect(url_for('store'))
+        whatsapp_number = "919744958548"
+        return render_template('plant_detail.html', p=plant, phone=whatsapp_number)
+    finally:
+        cur.close()
+        database.return_connection(conn)
+
+
+
 
 
 @app.route('/place_order', methods=['POST'])
