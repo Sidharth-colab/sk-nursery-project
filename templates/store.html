@@ -16,7 +16,6 @@
             background-attachment: fixed;
             background-position: center;
         }
-
         .hero-section {
             background-image: url('https://i.ibb.co/cS5pvjmP/photo-2026-03-14-11-56-16.jpg');
             background-size: cover;
@@ -45,7 +44,6 @@
             opacity: 0.9;
             margin-top: 6px;
         }
-
         .search-bar {
             position: sticky;
             top: 0;
@@ -64,7 +62,6 @@
             background: white;
             font-family: 'Poppins', sans-serif;
         }
-
         .category-tabs {
             display: flex;
             gap: 8px;
@@ -91,7 +88,6 @@
             background: #2d9e4f;
             color: white;
         }
-
         .plant-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -104,16 +100,15 @@
         @media (min-width: 1024px) {
             .plant-grid { grid-template-columns: repeat(4, 1fr); }
         }
-
         .plant-card {
             background: rgba(255,255,255,0.92);
             border-radius: 14px;
             overflow: hidden;
             box-shadow: 0 3px 10px rgba(0,0,0,0.12);
             transition: transform 0.2s;
+            cursor: pointer;
         }
         .plant-card:hover { transform: translateY(-3px); }
-
         .plant-img {
             width: 100%;
             height: 120px;
@@ -128,248 +123,7 @@
             justify-content: center;
             font-size: 3rem;
         }
-
         .plant-info { padding: 8px; }
         .plant-cat-badge {
             display: inline-block;
-            background: rgba(45,158,79,0.15);
-            color: #2d9e4f;
-            border-radius: 10px;
-            padding: 2px 8px;
-            font-size: 0.65rem;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-        .plant-name {
-            font-weight: 700;
-            font-size: 0.82rem;
-            color: #1a1a1a;
-            margin: 2px 0;
-        }
-        .plant-price {
-            font-size: 1rem;
-            font-weight: 800;
-            color: #2d9e4f;
-            margin: 4px 0 8px;
-        }
-
-        .btn-whatsapp {
-            background: linear-gradient(135deg, #25D366, #128C7E);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 7px 10px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            width: 100%;
-            cursor: pointer;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            margin-bottom: 5px;
-        }
-        .btn-whatsapp:hover { opacity: 0.9; color: white; }
-
-        .btn-order {
-            background: white;
-            color: #2d9e4f;
-            border: 1.5px solid #2d9e4f;
-            border-radius: 8px;
-            padding: 5px 10px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            width: 100%;
-            cursor: pointer;
-            text-align: center;
-            display: block;
-            font-family: 'Poppins', sans-serif;
-        }
-        .plant-stock { font-size: 0.68rem; color: #999; text-align: center; margin-top: 5px; }
-        .low-stock { color: #e53935; font-weight: 600; }
-
-        .whatsapp-fab {
-            position: fixed;
-            bottom: 20px;
-            right: 16px;
-            background: linear-gradient(135deg, #25D366, #128C7E);
-            color: white;
-            border-radius: 50%;
-            width: 56px;
-            height: 56px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            box-shadow: 0 4px 16px rgba(37,211,102,0.5);
-            text-decoration: none;
-            z-index: 1000;
-        }
-
-        footer {
-            text-align: center;
-            padding: 20px 16px 80px;
-            color: white;
-            font-size: 0.8rem;
-            text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
-        }
-
-        .modal-content { border-radius: 20px; overflow: hidden; }
-        .modal-header { background: #2d9e4f; color: white; }
-    </style>
-</head>
-<body>
-
-    <!-- Hero -->
-    <div class="hero-section">
-        <div class="hero-content">
-            <div class="hero-logo">🌿 SK Greenary</div>
-            <p class="hero-tagline">Fresh plants from our garden to your home</p>
-        </div>
-    </div>
-
-    <!-- Search -->
-    <div class="search-bar">
-        <input type="text" id="searchBar" placeholder="🔍 Search plants..." onkeyup="filterPlants()">
-    </div>
-
-    <!-- Category Tabs -->
-    <div class="category-tabs">
-        <button class="cat-btn active" onclick="filterCategory('all', this)">🌿 All</button>
-        <button class="cat-btn" onclick="filterCategory('Indoor', this)">🏠 Indoor</button>
-        <button class="cat-btn" onclick="filterCategory('Outdoor', this)">☀️ Outdoor</button>
-        <button class="cat-btn" onclick="filterCategory('Vegetable', this)">🥬 Vegetable</button>
-    </div>
-
-    <!-- Plant Grid -->
-    <div class="plant-grid" id="plantGrid">
-        {% for id, name, cat, price, stock, image_url in plants %}
-        <div class="plant-card plant-card-wrapper" data-name="{{ name }}" data-cat="{{ cat }}"
-             onclick="window.location.href='/plant/{{ id }}'">
-
-
-
-            
-            {% if image_url %}
-            <img src="{{ image_url }}" class="plant-img" alt="{{ name }}">
-            {% else %}
-            <div class="plant-emoji">🌿</div>
-            {% endif %}
-            <div class="plant-info">
-                <span class="plant-cat-badge">{{ cat }}</span>
-                <p class="plant-name">{{ name }}</p>
-                <p class="plant-price">₹{{ price }}</p>
-                <a href="https://wa.me/{{ phone }}?text=Hello%20SKGreenary!%20I%20want%20to%20buy%20{{ name }}%20for%20₹{{ price }}."
-                   target="_blank" class="btn-whatsapp">
-                    <i class="fab fa-whatsapp"></i> Buy Now
-                </a>
-                <button class="btn-order" onclick="openOrderForm('{{ name }}', {{ price }})">
-                    📋 Place Order
-                </button>
-                <p class="plant-stock {% if stock <= 2 %}low-stock{% endif %}">
-                    {% if stock <= 2 %}⚠️ Only {{ stock }} left!{% else %}{{ stock }} available{% endif %}
-                </p>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-
-    <!-- Order Modal -->
-    <div class="modal fade" id="orderModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">📋 Place Order</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <form action="/place_order" method="POST">
-                        <input type="hidden" name="plant_name" id="modalPlantName">
-                        <input type="hidden" name="plant_price" id="modalPlantPrice">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Plant</label>
-                            <input type="text" id="modalPlantDisplay" class="form-control" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Your Name</label>
-                            <input type="text" name="customer_name" class="form-control" placeholder="Enter your name" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Phone Number</label>
-                            <input type="tel" name="phone" class="form-control" placeholder="Enter your phone" required>
-                        </div>
-                        <div class="mb-3">
-                             <label class="form-label fw-bold">Delivery Address</label>
-                             <textarea name="address" class="form-control" placeholder="Enter your full address" rows="3" required></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Quantity</label>
-                            <input type="number" name="quantity" id="modalQty" class="form-control" value="1" min="1" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Total Price</label>
-                            <input type="text" id="modalTotal" class="form-control bg-light" readonly>
-                        </div>
-                        <button type="submit" class="btn btn-success w-100 fw-bold py-2">✅ Confirm Order</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- WhatsApp FAB -->
-    <a href="https://wa.me/{{ phone }}" target="_blank" class="whatsapp-fab">
-        <i class="fab fa-whatsapp"></i>
-    </a>
-
-    <footer>
-        <p>© 2026 SK Greenary | Fresh plants, happy homes 🌿</p>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        let currentCategory = 'all';
-
-        function filterPlants() {
-            const query = document.getElementById('searchBar').value.toLowerCase();
-            const cards = document.querySelectorAll('.plant-card-wrapper');
-            cards.forEach(card => {
-                const name = card.getAttribute('data-name').toLowerCase();
-                const cat = card.getAttribute('data-cat');
-                const matchSearch = name.includes(query);
-                const matchCat = currentCategory === 'all' || cat === currentCategory;
-                card.style.display = matchSearch && matchCat ? '' : 'none';
-            });
-        }
-
-        function filterCategory(cat, btn) {
-            currentCategory = cat;
-            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            filterPlants();
-        }
-
-        function openOrderForm(name, price) {
-            document.getElementById('modalPlantName').value = name;
-            document.getElementById('modalPlantPrice').value = price;
-            document.getElementById('modalPlantDisplay').value = name;
-            document.getElementById('modalTotal').value = '₹' + price;
-            document.getElementById('modalQty').oninput = function() {
-                document.getElementById('modalTotal').value = '₹' + (this.value * price);
-            };
-            new bootstrap.Modal(document.getElementById('orderModal')).show();
-        }
-        // If arriving from a plant detail page with an "add" request, add it to cart automatically
-        const urlParams = new URLSearchParams(window.location.search);
-        const addName = urlParams.get('add');
-        const addPrice = urlParams.get('price');
-        if (addName && addPrice) {
-            const btnEl = document.getElementById('cartbtn-' + addName.replace(/ /g, '_'));
-            addToCart(addName, parseFloat(addPrice), btnEl || document.createElement('button'));
-            new bootstrap.Modal(document.getElementById('cartModal')).show();
-            window.history.replaceState({}, document.title, '/store'); // clean up the URL
-        }
-    </script>
-</body>
-</html>
+            background:
