@@ -126,4 +126,390 @@
         .plant-info { padding: 8px; }
         .plant-cat-badge {
             display: inline-block;
-            background:
+            background: rgba(45,158,79,0.15);
+            color: #2d9e4f;
+            border-radius: 10px;
+            padding: 2px 8px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .plant-name {
+            font-weight: 700;
+            font-size: 0.82rem;
+            color: #1a1a1a;
+            margin: 2px 0;
+        }
+        .plant-price {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #2d9e4f;
+            margin: 4px 0 8px;
+        }
+        .btn-whatsapp {
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 7px 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 5px;
+        }
+        .btn-whatsapp:hover { opacity: 0.9; color: white; }
+        .btn-order {
+            background: white;
+            color: #2d9e4f;
+            border: 1.5px solid #2d9e4f;
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            text-align: center;
+            display: block;
+            font-family: 'Poppins', sans-serif;
+        }
+        .btn-order.added {
+            background: #2d9e4f;
+            color: white;
+        }
+        .plant-stock { font-size: 0.68rem; color: #999; text-align: center; margin-top: 5px; }
+        .low-stock { color: #e53935; font-weight: 600; }
+        .whatsapp-fab {
+            position: fixed;
+            bottom: 20px;
+            right: 16px;
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            color: white;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 16px rgba(37,211,102,0.5);
+            text-decoration: none;
+            z-index: 1000;
+        }
+        .cart-fab {
+            position: fixed;
+            bottom: 20px;
+            left: 16px;
+            background: #2d9e4f;
+            color: white;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            box-shadow: 0 4px 16px rgba(45,158,79,0.5);
+            border: none;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        .cart-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #e53935;
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        footer {
+            text-align: center;
+            padding: 20px 16px 80px;
+            color: white;
+            font-size: 0.8rem;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+        }
+        .modal-content { border-radius: 20px; overflow: hidden; }
+        .modal-header { background: #2d9e4f; color: white; }
+        .cart-item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .cart-qty-controls button {
+            width: 26px; height: 26px;
+            border: 1px solid #2d9e4f;
+            background: white;
+            color: #2d9e4f;
+            border-radius: 6px;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Hero -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <div class="hero-logo">🌿 SK Greenary</div>
+            <p class="hero-tagline">Fresh plants from our garden to your home</p>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-bar">
+        <input type="text" id="searchBar" placeholder="🔍 Search plants..." onkeyup="filterPlants()">
+    </div>
+
+    <!-- Category Tabs -->
+    <div class="category-tabs">
+        <button class="cat-btn active" onclick="filterCategory('all', this)">🌿 All</button>
+        <button class="cat-btn" onclick="filterCategory('Indoor', this)">🏠 Indoor</button>
+        <button class="cat-btn" onclick="filterCategory('Outdoor', this)">☀️ Outdoor</button>
+        <button class="cat-btn" onclick="filterCategory('Vegetable', this)">🥬 Vegetable</button>
+    </div>
+
+    <!-- Plant Grid -->
+    <div class="plant-grid" id="plantGrid">
+        {% for id, name, cat, price, stock, image_url in plants %}
+        <div class="plant-card plant-card-wrapper" data-name="{{ name }}" data-cat="{{ cat }}"
+             onclick="window.location.href='/plant/{{ id }}'">
+            {% if image_url %}
+            <img src="{{ image_url }}" class="plant-img" alt="{{ name }}">
+            {% else %}
+            <div class="plant-emoji">🌿</div>
+            {% endif %}
+            <div class="plant-info">
+                <span class="plant-cat-badge">{{ cat }}</span>
+                <p class="plant-name">{{ name }}</p>
+                <p class="plant-price">₹{{ price }}</p>
+                <a href="https://wa.me/{{ phone }}?text=Hello%20SKGreenary!%20I%20want%20to%20buy%20{{ name }}%20for%20₹{{ price }}."
+                   target="_blank" class="btn-whatsapp" onclick="event.stopPropagation()">
+                    <i class="fab fa-whatsapp"></i> Buy Now
+                </a>
+                <button class="btn-order" id="cartbtn-{{ name|replace(' ', '_') }}"
+                        onclick="event.stopPropagation(); addToCart('{{ name }}', {{ price }}, this)">
+                    🛒 Add to Cart
+                </button>
+                <p class="plant-stock {% if stock <= 2 %}low-stock{% endif %}">
+                    {% if stock <= 2 %}⚠️ Only {{ stock }} left!{% else %}{{ stock }} available{% endif %}
+                </p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Cart Modal -->
+    <div class="modal fade" id="cartModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">🛒 Your Cart</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="cartItemsList"></div>
+                    <div id="cartEmptyMsg" class="text-center text-muted py-3">Your cart is empty. Add some plants first!</div>
+                    <hr>
+                    <div class="d-flex justify-content-between fw-bold fs-5 mb-3">
+                        <span>Total</span>
+                        <span id="cartTotal">₹0</span>
+                    </div>
+                    <button class="btn btn-success w-100 fw-bold py-2" id="goToCheckoutBtn" onclick="openCheckout()" disabled>
+                        Proceed to Checkout →
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div class="modal fade" id="checkoutModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">✅ Checkout</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-3">One form for your whole order — no need to fill this per plant.</p>
+                    <form action="/place_order_cart" method="POST" id="checkoutForm">
+                        <input type="hidden" name="cart_json" id="cartJsonInput">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Your Name</label>
+                            <input type="text" name="customer_name" class="form-control" placeholder="Enter your name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Phone Number</label>
+                            <input type="tel" name="phone" class="form-control" placeholder="Enter your phone" required>
+                        </div>
+                        <div class="mb-3">
+                             <label class="form-label fw-bold">Delivery Address</label>
+                             <textarea name="address" class="form-control" placeholder="Enter your full address" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3 p-3 bg-light rounded">
+                            <div class="d-flex justify-content-between fw-bold">
+                                <span>Order Total</span>
+                                <span id="checkoutTotal">₹0</span>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100 fw-bold py-2">✅ Confirm Order</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart FAB -->
+    <button class="cart-fab" onclick="new bootstrap.Modal(document.getElementById('cartModal')).show()">
+        🛒
+        <span class="cart-badge" id="cartBadge" style="display:none">0</span>
+    </button>
+
+    <!-- WhatsApp FAB -->
+    <a href="https://wa.me/{{ phone }}" target="_blank" class="whatsapp-fab">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <footer>
+        <p>© 2026 SK Greenary | Fresh plants, happy homes 🌿</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentCategory = 'all';
+        let cart = {}; // { plantName: { price, qty } }
+
+        function filterPlants() {
+            const query = document.getElementById('searchBar').value.toLowerCase();
+            const cards = document.querySelectorAll('.plant-card-wrapper');
+            cards.forEach(card => {
+                const name = card.getAttribute('data-name').toLowerCase();
+                const cat = card.getAttribute('data-cat');
+                const matchSearch = name.includes(query);
+                const matchCat = currentCategory === 'all' || cat === currentCategory;
+                card.style.display = matchSearch && matchCat ? '' : 'none';
+            });
+        }
+
+        function filterCategory(cat, btn) {
+            currentCategory = cat;
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            filterPlants();
+        }
+
+        function addToCart(name, price, btnEl) {
+            if (!cart[name]) {
+                cart[name] = { price: price, qty: 0 };
+            }
+            cart[name].qty += 1;
+            if (btnEl) {
+                btnEl.textContent = `✅ In Cart (${cart[name].qty})`;
+                btnEl.classList.add('added');
+            }
+            renderCart();
+        }
+
+        function changeQty(name, delta) {
+            if (!cart[name]) return;
+            cart[name].qty += delta;
+            if (cart[name].qty <= 0) {
+                delete cart[name];
+                const btnEl = document.getElementById('cartbtn-' + name.replace(/ /g, '_'));
+                if (btnEl) {
+                    btnEl.textContent = '🛒 Add to Cart';
+                    btnEl.classList.remove('added');
+                }
+            } else {
+                const btnEl = document.getElementById('cartbtn-' + name.replace(/ /g, '_'));
+                if (btnEl) btnEl.textContent = `✅ In Cart (${cart[name].qty})`;
+            }
+            renderCart();
+        }
+
+        function getCartTotal() {
+            return Object.values(cart).reduce((sum, item) => sum + item.price * item.qty, 0);
+        }
+
+        function getCartCount() {
+            return Object.values(cart).reduce((sum, item) => sum + item.qty, 0);
+        }
+
+        function renderCart() {
+            const listEl = document.getElementById('cartItemsList');
+            const emptyEl = document.getElementById('cartEmptyMsg');
+            const totalEl = document.getElementById('cartTotal');
+            const badgeEl = document.getElementById('cartBadge');
+            const checkoutBtn = document.getElementById('goToCheckoutBtn');
+
+            const count = getCartCount();
+            badgeEl.style.display = count > 0 ? 'flex' : 'none';
+            badgeEl.textContent = count;
+            checkoutBtn.disabled = count === 0;
+
+            if (count === 0) {
+                listEl.innerHTML = '';
+                emptyEl.style.display = 'block';
+                totalEl.textContent = '₹0';
+                return;
+            }
+            emptyEl.style.display = 'none';
+
+            let html = '';
+            for (const [name, item] of Object.entries(cart)) {
+                html += `
+                    <div class="cart-item-row">
+                        <div>
+                            <div class="fw-bold">${name}</div>
+                            <div class="text-muted small">₹${item.price} each</div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 cart-qty-controls">
+                            <button onclick="changeQty('${name}', -1)">−</button>
+                            <span>${item.qty}</span>
+                            <button onclick="changeQty('${name}', 1)">+</button>
+                        </div>
+                        <div class="fw-bold">₹${item.price * item.qty}</div>
+                    </div>
+                `;
+            }
+            listEl.innerHTML = html;
+            totalEl.textContent = '₹' + getCartTotal();
+        }
+
+        function openCheckout() {
+            document.getElementById('cartJsonInput').value = JSON.stringify(cart);
+            document.getElementById('checkoutTotal').textContent = '₹' + getCartTotal();
+            bootstrap.Modal.getInstance(document.getElementById('cartModal')).hide();
+            new bootstrap.Modal(document.getElementById('checkoutModal')).show();
+        }
+
+        // If arriving from a plant detail page with an "add" request, add it to cart automatically
+        window.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const addName = urlParams.get('add');
+            const addPrice = urlParams.get('price');
+            if (addName && addPrice) {
+                const btnEl = document.getElementById('cartbtn-' + addName.replace(/ /g, '_'));
+                addToCart(addName, parseFloat(addPrice), btnEl);
+                new bootstrap.Modal(document.getElementById('cartModal')).show();
+                window.history.replaceState({}, document.title, '/store');
+            }
+        });
+    </script>
+</body>
+</html>
