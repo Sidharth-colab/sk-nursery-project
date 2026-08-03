@@ -136,6 +136,62 @@
             margin: 0;
         }
 
+        .plant-desc {
+            font-size: 0.88rem;
+            color: #444;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .care-accordion {
+            margin-top: 8px;
+        }
+        .care-heading {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .acc-item {
+            border-bottom: 1px solid #eee;
+        }
+        .acc-trigger {
+            width: 100%;
+            background: none;
+            border: none;
+            text-align: left;
+            padding: 14px 0;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #1a1a1a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .acc-trigger span {
+            font-weight: 400;
+            color: #2d9e4f;
+            font-size: 1.1rem;
+            transition: transform 0.2s ease;
+        }
+        .acc-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.25s ease;
+        }
+        .acc-body p {
+            font-size: 0.82rem;
+            color: #666;
+            line-height: 1.5;
+            padding-bottom: 14px;
+        }
+        .acc-item.open .acc-body {
+            max-height: 200px;
+        }
+        .acc-item.open .acc-trigger span {
+            transform: rotate(45deg);
+        }
+
         .sticky-bar {
             position: fixed;
             bottom: 0;
@@ -201,14 +257,39 @@
         <div class="stock-pill stock-ok">✅ {{ p[4] }} available</div>
         {% endif %}
 
+        {% if p[6] %}
+        <p class="plant-desc">{{ p[6] }}</p>
+        {% endif %}
+
         <div class="info-card">
             <div class="info-card-title"><i class="fas fa-truck text-success"></i> Delivery</div>
             <p>We deliver locally within Kerala. Delivery time and charges confirmed via WhatsApp after order.</p>
         </div>
 
-        <div class="info-card">
-            <div class="info-card-title"><i class="fas fa-seedling text-success"></i> Plant Care</div>
-            <p>Ask us on WhatsApp for care instructions specific to this plant.</p>
+        <div class="care-accordion">
+            <h3 class="care-heading">🌿 Plant Care Guide</h3>
+            {% set care = care_guides.get(p[2], care_guides['Indoor']) %}
+
+            <div class="acc-item">
+                <button class="acc-trigger" onclick="toggleAcc(this)">☀️ Light <span>+</span></button>
+                <div class="acc-body"><p>{{ care.light }}</p></div>
+            </div>
+            <div class="acc-item">
+                <button class="acc-trigger" onclick="toggleAcc(this)">💧 Water <span>+</span></button>
+                <div class="acc-body"><p>{{ care.water }}</p></div>
+            </div>
+            <div class="acc-item">
+                <button class="acc-trigger" onclick="toggleAcc(this)">🌱 Soil & Feeding <span>+</span></button>
+                <div class="acc-body"><p>{{ care.soil }}</p></div>
+            </div>
+            <div class="acc-item">
+                <button class="acc-trigger" onclick="toggleAcc(this)">🌡️ Temperature & Humidity <span>+</span></button>
+                <div class="acc-body"><p>{{ care.temp }}</p></div>
+            </div>
+            <div class="acc-item">
+                <button class="acc-trigger" onclick="toggleAcc(this)">💡 Pro Tip <span>+</span></button>
+                <div class="acc-body"><p>{{ care.tip }}</p></div>
+            </div>
         </div>
     </div>
 
@@ -221,6 +302,12 @@
             <i class="fab fa-whatsapp"></i> Buy on WhatsApp
         </a>
     </div>
+
+    <script>
+        function toggleAcc(btn) {
+            btn.parentElement.classList.toggle('open');
+        }
+    </script>
 
 </body>
 </html>
