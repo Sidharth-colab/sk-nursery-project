@@ -14,6 +14,32 @@ if not app.secret_key or not ADMIN_PASSWORD:
 
 database.create_database()
 
+CARE_GUIDES = {
+    "Indoor": {
+        "light": "Prefers bright, indirect sunlight. Avoid direct harsh afternoon sun near windows.",
+        "water": "Water when the top inch of soil feels dry, usually every 5-7 days. Avoid overwatering — soggy soil is the most common cause of indoor plant issues.",
+        "soil": "Use a well-draining potting mix. Feed with a balanced liquid fertilizer once a month during warmer months.",
+        "temp": "Thrives in typical Kerala indoor temperatures (18-30°C). Keep away from direct AC vents.",
+        "tip": "Wipe leaves occasionally with a damp cloth — it helps the plant breathe and looks great too."
+    },
+    "Outdoor": {
+        "light": "Needs full sun to partial shade, at least 4-6 hours of direct sunlight daily.",
+        "water": "Water deeply 2-3 times a week depending on rainfall; more frequently during hot, dry spells.",
+        "soil": "Well-draining garden soil enriched with organic compost works best.",
+        "temp": "Well-suited to Kerala's outdoor climate; monitor extra closely during peak monsoon for waterlogging.",
+        "tip": "Mulch around the base to retain moisture and keep weeds down."
+    },
+    "Vegetable": {
+        "light": "Needs full sun — at least 5-6 hours daily for good yield.",
+        "water": "Water consistently, keeping soil evenly moist but not waterlogged. Morning watering is best.",
+        "soil": "Rich, well-draining soil with regular compost or organic fertilizer supports better yields.",
+        "temp": "Grows well in Kerala's warm climate; monsoon months (Jun-Sep) are typically the strongest growing season.",
+        "tip": "Harvest regularly — it encourages the plant to keep producing."
+    }
+}
+
+# --- Login Required Decorator ---
+
 # --- Login Required Decorator ---
 def login_required(f):
     @wraps(f)
@@ -272,7 +298,7 @@ def plant_detail(id):
         if not plant:
             return redirect(url_for('store'))
         whatsapp_number = "919744958548"
-        return render_template('plant_detail.html', p=plant, phone=whatsapp_number)
+        return render_template('plant_detail.html', p=plant, phone=whatsapp_number, care_guides=CARE_GUIDES)
     finally:
         cur.close()
         database.return_connection(conn)
