@@ -193,7 +193,8 @@ def add_plant():
     price = float(request.form.get('price'))
     cost = float(request.form.get('cost'))
     image_url = request.form.get('image_url', '')
-    database.add_new_plant(name, cat, price, cost, image_url)
+    description = request.form.get('description', '')
+    database.add_new_plant(name, cat, price, cost, image_url, description)
     return redirect(url_for('manage'))
 
 @app.route('/update_stock', methods=['POST'])
