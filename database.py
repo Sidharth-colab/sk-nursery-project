@@ -160,14 +160,14 @@ def get_all_plants():
     return_connection(conn)
     return plants
 
-def add_new_plant(name, category, price, unit_cost, image_url=''):
+def add_new_plant(name, category, price, unit_cost, image_url='', description=''):
     conn = None
     try:
         conn = get_db_connection()
         cur = conn.cursor()
         today = datetime.now().date()
-        cur.execute('''INSERT INTO plants (name, category, price, stock, min_stock, unit_cost, last_updated, image_url)
-                          VALUES (%s, %s, %s, 0, 2, %s, %s, %s)''', (name, category, price, unit_cost, today, image_url))
+        cur.execute('''INSERT INTO plants (name, category, price, stock, min_stock, unit_cost, last_updated, image_url, description)
+                          VALUES (%s, %s, %s, 0, 2, %s, %s, %s, %s)''', (name, category, price, unit_cost, today, image_url, description))
         conn.commit()
         cur.close()
         return True
